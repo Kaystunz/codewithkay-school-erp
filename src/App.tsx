@@ -3,6 +3,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import StudentsPage from "./pages/StudentsPage";
 
 function App() {
   return (
@@ -14,7 +15,7 @@ function App() {
 
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/students" element={<PlaceholderPage />} />
+          <Route path="/students" element={<StudentsPage />} />
           <Route path="/teachers" element={<PlaceholderPage />} />
           <Route path="/parents" element={<PlaceholderPage />} />
           <Route path="/classes" element={<PlaceholderPage />} />
