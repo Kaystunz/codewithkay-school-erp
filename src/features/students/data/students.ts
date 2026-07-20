@@ -1,0 +1,48 @@
+import type { Student } from "../types/student";
+
+export const initialStudents: Student[] = [
+  {
+    id: 1,
+    name: "Aminat Yusuf",
+    admissionNumber: "FCS/2026/001",
+    className: "Year 4",
+    gender: "Female",
+    parentName: "Mrs. Yusuf",
+    phone: "0803 456 7821",
+    email: "yusufparent@example.com",
+    status: "Active",
+  },
+  {
+    id: 2,
+    name: "Ibrahim Musa",
+    admissionNumber: "FCS/2026/002",
+    className: "Year 3",
+    gender: "Male",
+    parentName: "Mr. Musa",
+    phone: "0814 221 6630",
+    email: "musaibrahim@example.com",
+    status: "Active",
+  },
+  {
+    id: 3,
+    name: "Zainab Lawal",
+    admissionNumber: "FCS/2026/003",
+    className: "Year 5",
+    gender: "Female",
+    parentName: "Mrs. Lawal",
+    phone: "0902 554 1900",
+    email: "lawalparent@example.com",
+    status: "Active",
+  },
+  {
+    id: 4,
+    name: "Daniel Adeyemi",
+    admissionNumber: "FCS/2026/004",
+    className: "Year 2",
+    gender: "Male",
+    parentName: "Mr. Adeyemi",
+    phone: "0705 199 3102",
+    email: "adeyemifamily@example.com",
+    status: "Inactive",
+  },
+];

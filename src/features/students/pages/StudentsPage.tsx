@@ -1,77 +1,34 @@
+import StudentStats from "../components/StudentStats";
+import StudentFilters from "../components/StudentFilters";
+import { initialStudents } from "../data/students";
+
+import type {
+  Student,
+  StudentFormData,
+  StudentGender,
+  StudentStatus,
+} from "../types/student";
 import { useMemo, useState } from "react";
 import {
-  Filter,
-  GraduationCap,
   Mail,
+  GraduationCap,
   MoreHorizontal,
   Phone,
   Plus,
-  Search,
-  UserCheck,
-  UserRound,
   X,
 } from "lucide-react";
 
-type StudentStatus = "Active" | "Inactive";
-
-type Student = {
-  id: number;
-  name: string;
-  admissionNumber: string;
-  className: string;
-  gender: "Male" | "Female";
-  parentName: string;
-  phone: string;
-  email: string;
-  status: StudentStatus;
+const emptyStudentForm: StudentFormData = {
+  name: "",
+  admissionNumber: "",
+  className: "Year 1",
+  gender: "Male",
+  parentName: "",
+  phone: "",
+  email: "",
+  status: "Active",
 };
 
-const initialStudents: Student[] = [
-  {
-    id: 1,
-    name: "Aminat Yusuf",
-    admissionNumber: "FCS/2026/001",
-    className: "Year 4",
-    gender: "Female",
-    parentName: "Mrs. Yusuf",
-    phone: "0803 456 7821",
-    email: "yusufparent@example.com",
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Ibrahim Musa",
-    admissionNumber: "FCS/2026/002",
-    className: "Year 3",
-    gender: "Male",
-    parentName: "Mr. Musa",
-    phone: "0814 221 6630",
-    email: "musaibrahim@example.com",
-    status: "Active",
-  },
-  {
-    id: 3,
-    name: "Zainab Lawal",
-    admissionNumber: "FCS/2026/003",
-    className: "Year 5",
-    gender: "Female",
-    parentName: "Mrs. Lawal",
-    phone: "0902 554 1900",
-    email: "lawalparent@example.com",
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "Daniel Adeyemi",
-    admissionNumber: "FCS/2026/004",
-    className: "Year 2",
-    gender: "Male",
-    parentName: "Mr. Adeyemi",
-    phone: "0705 199 3102",
-    email: "adeyemifamily@example.com",
-    status: "Inactive",
-  },
-];
 
 function StudentsPage() {
   const [students, setStudents] = useState<Student[]>(initialStudents);
@@ -80,17 +37,9 @@ function StudentsPage() {
   const [statusFilter, setStatusFilter] = useState("All statuses");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    admissionNumber: "",
-    className: "Year 1",
-    gender: "Male" as "Male" | "Female",
-    parentName: "",
-    phone: "",
-    email: "",
-    status: "Active" as StudentStatus,
-  });
-
+  const [formData, setFormData] =
+  useState<StudentFormData>(emptyStudentForm);
+  
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
       const matchesSearch =
@@ -133,16 +82,7 @@ function StudentsPage() {
       ...currentStudents,
     ]);
 
-    setFormData({
-      name: "",
-      admissionNumber: "",
-      className: "Year 1",
-      gender: "Male",
-      parentName: "",
-      phone: "",
-      email: "",
-      status: "Active",
-    });
+    setFormData(emptyStudentForm);
 
     setIsModalOpen(false);
   }
@@ -170,112 +110,21 @@ function StudentsPage() {
         </button>
       </section>
 
-      <section className="grid gap-5 sm:grid-cols-3">
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500">
-                Total students
-              </p>
-              <p className="mt-2 text-3xl font-bold text-slate-900">
-                {students.length}
-              </p>
-            </div>
-
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
-              <GraduationCap size={24} />
-            </div>
-          </div>
-        </article>
-
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500">
-                Active students
-              </p>
-              <p className="mt-2 text-3xl font-bold text-slate-900">
-                {activeStudents}
-              </p>
-            </div>
-
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-              <UserCheck size={24} />
-            </div>
-          </div>
-        </article>
-
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-500">
-                Inactive students
-              </p>
-              <p className="mt-2 text-3xl font-bold text-slate-900">
-                {inactiveStudents}
-              </p>
-            </div>
-
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
-              <UserRound size={24} />
-            </div>
-          </div>
-        </article>
-      </section>
+      <StudentStats
+        totalStudents={students.length}
+        activeStudents={activeStudents}
+        inactiveStudents={inactiveStudents}
+      />
 
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-            <div className="relative flex-1">
-              <Search
-                size={19}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              />
-
-              <input
-                type="search"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search by name, admission number or parent..."
-                className="w-full rounded-xl border border-slate-200 py-3 pl-11 pr-4 outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
-              />
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <div className="relative">
-                <Filter
-                  size={17}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-
-                <select
-                  value={classFilter}
-                  onChange={(event) => setClassFilter(event.target.value)}
-                  className="w-full appearance-none rounded-xl border border-slate-200 py-3 pl-10 pr-10 outline-none sm:w-44"
-                >
-                  <option>All classes</option>
-                  <option>Year 1</option>
-                  <option>Year 2</option>
-                  <option>Year 3</option>
-                  <option>Year 4</option>
-                  <option>Year 5</option>
-                  <option>Year 6</option>
-                </select>
-              </div>
-
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none sm:w-44"
-              >
-                <option>All statuses</option>
-                <option>Active</option>
-                <option>Inactive</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
+        <StudentFilters
+          searchTerm={searchTerm}
+          classFilter={classFilter}
+          statusFilter={statusFilter}
+          onSearchChange={setSearchTerm}
+          onClassFilterChange={setClassFilter}
+          onStatusFilterChange={setStatusFilter}
+        />
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-slate-50">
@@ -473,7 +322,7 @@ function StudentsPage() {
                   onChange={(event) =>
                     setFormData({
                       ...formData,
-                      gender: event.target.value as "Male" | "Female",
+                      gender: event.target.value as StudentGender,
                     })
                   }
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none"

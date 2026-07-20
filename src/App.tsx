@@ -3,7 +3,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
-import StudentsPage from "./pages/StudentsPage";
+import StudentsPage from "./features/students/pages/StudentsPage";
 
 function App() {
   return (
