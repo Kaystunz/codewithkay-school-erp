@@ -6,11 +6,15 @@ import PlaceholderPage from "./pages/PlaceholderPage";
 import StudentsPage from "./features/students/pages/StudentsPage";
 import StudentDetailsPage from "./features/students/pages/StudentDetailsPage";
 import StudentsProvider from "./features/students/context/StudentsProvider";
+import TeachersPage from "./features/teachers/pages/TeachersPage";
+import TeachersProvider from "./features/teachers/context/TeachersProvider";
+import TeacherDetailsPage from "./features/teachers/pages/TeacherDetailsPage";
 
 function App() {
   return (
     <StudentsProvider>
-      <BrowserRouter>
+    <TeachersProvider>
+    <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
 
@@ -23,7 +27,8 @@ function App() {
               path="/students/:studentId"
               element={<StudentDetailsPage />}
             />
-            <Route path="/teachers" element={<PlaceholderPage />} />
+            <Route path="/teachers" element={<TeachersPage />} />
+            <Route path="/teachers/:teacherId" element={<TeacherDetailsPage />} />
             <Route path="/parents" element={<PlaceholderPage />} />
             <Route path="/classes" element={<PlaceholderPage />} />
             <Route path="/attendance" element={<PlaceholderPage />} />
@@ -34,8 +39,9 @@ function App() {
 
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </BrowserRouter>
-    </StudentsProvider>
+          </BrowserRouter>
+  </TeachersProvider>
+</StudentsProvider>
   );
 }
 
