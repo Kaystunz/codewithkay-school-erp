@@ -15,12 +15,12 @@ type AddStudentModalProps = {
 };
 
 function AddStudentModal({
-  isOpen,
+   isOpen,
    isEditing,
-  formData,
-  onClose,
-  onSubmit,
-  onFormChange,
+   formData,
+   onClose,
+   onSubmit,
+   onFormChange,
 }: AddStudentModalProps) {
   if (!isOpen) {
     return null;

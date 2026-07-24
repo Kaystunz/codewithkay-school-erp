@@ -5,8 +5,11 @@ import StudentTable from "../components/StudentTable";
 import { useStudentsContext } from "../hooks/useStudentsContext";
 import AddStudentModal from "../components/AddStudentModal";
 import { Plus } from "lucide-react";
+import { useToast } from "../../../components/ui/toast/useToast";
+
 
 function StudentsPage() {
+  const { showToast } = useToast();
 const {
   students,
   filteredStudents,
@@ -25,6 +28,29 @@ const {
   handleSubmit,
   isEditing,
 } = useStudentsContext();
+
+function handleFormSubmit(
+  event: React.FormEvent<HTMLFormElement>
+) {
+  const result = handleSubmit(event);
+
+  if (!result.success) {
+    showToast({
+      type: "error",
+      message: result.message,
+    });
+
+    return;
+  }
+
+  showToast({
+    type: "success",
+    message:
+      result.action === "updated"
+        ? "Student updated successfully."
+        : "Student added successfully.",
+  });
+}
 
 
   return (
@@ -74,7 +100,7 @@ const {
         isEditing={isEditing}
         formData={formData}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmit}
+       onSubmit={handleFormSubmit}
         onFormChange={setFormData}
       />
 

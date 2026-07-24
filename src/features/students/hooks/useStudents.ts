@@ -16,6 +16,16 @@ const emptyStudentForm: StudentFormData = {
   status: "Active",
 };
 
+type SubmitResult =
+  | {
+      success: true;
+      action: "added" | "updated";
+    }
+  | {
+      success: false;
+      message: string;
+    };
+
 export function useStudents() {
   const [students, setStudents] =
     useState<Student[]>(initialStudents);
@@ -34,23 +44,26 @@ export function useStudents() {
   const [editingStudentId, setEditingStudentId] =
     useState<number | null>(null);
 
-  const isEditing = editingStudentId !== null;
-
   const [formData, setFormData] =
     useState<StudentFormData>(emptyStudentForm);
 
+  const isEditing = editingStudentId !== null;
+
   const filteredStudents = useMemo(() => {
     return students.filter((student) => {
+      const normalizedSearchTerm =
+        searchTerm.toLowerCase();
+
       const matchesSearch =
         student.name
           .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
+          .includes(normalizedSearchTerm) ||
         student.admissionNumber
           .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
+          .includes(normalizedSearchTerm) ||
         student.parentName
           .toLowerCase()
-          .includes(searchTerm.toLowerCase());
+          .includes(normalizedSearchTerm);
 
       const matchesClass =
         classFilter === "All classes" ||
@@ -99,45 +112,136 @@ export function useStudents() {
   }
 
   function deleteStudent(studentId: number) {
-  setStudents((currentStudents) =>
-    currentStudents.filter(
-      (student) => student.id !== studentId
-    )
-  );
-}
-
- function handleSubmit(
-  event: React.FormEvent<HTMLFormElement>
-) {
-  event.preventDefault();
-
-  if (isEditing) {
     setStudents((currentStudents) =>
-      currentStudents.map((student) =>
-        student.id === editingStudentId
-          ? {
-              ...student,
-              ...formData,
-            }
-          : student
+      currentStudents.filter(
+        (student) => student.id !== studentId
       )
     );
-  } else {
-    const newStudent: Student = {
-      id: Date.now(),
-      ...formData,
-    };
-
-    setStudents((currentStudents) => [
-      newStudent,
-      ...currentStudents,
-    ]);
   }
 
-  setFormData(emptyStudentForm);
-  setEditingStudentId(null);
-  setIsModalOpen(false);
-}
+  function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ): SubmitResult {
+    event.preventDefault();
+
+    const trimmedName = formData.name.trim();
+    const trimmedAdmissionNumber =
+      formData.admissionNumber.trim();
+    const trimmedParentName =
+      formData.parentName.trim();
+    const trimmedPhone = formData.phone.trim();
+    const trimmedEmail = formData.email.trim();
+
+    if (!trimmedName) {
+      return {
+        success: false,
+        message: "Student name is required.",
+      };
+    }
+
+    if (!trimmedAdmissionNumber) {
+      return {
+        success: false,
+        message: "Admission number is required.",
+      };
+    }
+
+    if (!trimmedParentName) {
+      return {
+        success: false,
+        message:
+          "Parent or guardian name is required.",
+      };
+    }
+
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+      trimmedEmail &&
+      !emailPattern.test(trimmedEmail)
+    ) {
+      return {
+        success: false,
+        message:
+          "Please enter a valid email address.",
+      };
+    }
+
+    const phonePattern =
+      /^[0-9+\-\s()]{7,20}$/;
+
+    if (
+      trimmedPhone &&
+      !phonePattern.test(trimmedPhone)
+    ) {
+      return {
+        success: false,
+        message:
+          "Please enter a valid phone number.",
+      };
+    }
+
+    const admissionNumberExists = students.some(
+      (student) =>
+        student.admissionNumber.toLowerCase() ===
+          trimmedAdmissionNumber.toLowerCase() &&
+        student.id !== editingStudentId
+    );
+
+    if (admissionNumberExists) {
+      return {
+        success: false,
+        message:
+          "A student with this admission number already exists.",
+      };
+    }
+
+    const cleanedFormData: StudentFormData = {
+      ...formData,
+      name: trimmedName,
+      admissionNumber: trimmedAdmissionNumber,
+      parentName: trimmedParentName,
+      phone: trimmedPhone,
+      email: trimmedEmail,
+    };
+
+    if (isEditing) {
+      setStudents((currentStudents) =>
+        currentStudents.map((student) =>
+          student.id === editingStudentId
+            ? {
+                ...student,
+                ...cleanedFormData,
+              }
+            : student
+        )
+      );
+    } else {
+      const newStudent: Student = {
+        id: Date.now(),
+        ...cleanedFormData,
+      };
+
+      setStudents((currentStudents) => [
+        newStudent,
+        ...currentStudents,
+      ]);
+    }
+
+    const action = isEditing
+      ? "updated"
+      : "added";
+
+    setFormData(emptyStudentForm);
+    setEditingStudentId(null);
+    setIsModalOpen(false);
+
+    return {
+      success: true,
+      action,
+    };
+  }
 
   return {
     students,
