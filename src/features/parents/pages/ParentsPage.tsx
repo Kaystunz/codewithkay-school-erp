@@ -1,0 +1,120 @@
+import { Plus } from "lucide-react";
+
+import ParentStats from "../components/ParentStats";
+import ParentFilters from "../components/ParentFilters";
+import ParentTable from "../components/ParentTable";
+import AddParentModal from "../components/AddParentModal";
+
+import { useParentsContext } from "../hooks/useParentsContext";
+import { useToast } from "../../../components/ui/toast/useToast";
+
+function ParentsPage() {
+  const { showToast } = useToast();
+
+  const {
+    parents,
+    filteredParents,
+
+    activeParents,
+    inactiveParents,
+    guardians,
+
+    searchTerm,
+    setSearchTerm,
+
+    relationshipFilter,
+    setRelationshipFilter,
+
+    statusFilter,
+    setStatusFilter,
+
+    isModalOpen,
+    setIsModalOpen,
+
+    formData,
+    setFormData,
+
+    handleSubmit,
+
+    isEditing,
+  } = useParentsContext();
+
+  function handleFormSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
+    const result = handleSubmit(event);
+
+    if (!result.success) {
+      showToast({
+        type: "error",
+        message: result.message,
+      });
+
+      return;
+    }
+
+    showToast({
+      type: "success",
+      message:
+        result.action === "updated"
+          ? "Parent updated successfully."
+          : "Parent added successfully.",
+    });
+  }
+
+  return (
+    <div className="space-y-8">
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900">
+            Parents & Guardians
+          </h1>
+
+          <p className="mt-2 text-slate-500">
+            Manage parent records and link guardians to students.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 py-3 font-semibold text-white transition hover:bg-teal-800"
+        >
+          <Plus size={20} />
+          Add parent
+        </button>
+      </section>
+
+      <ParentStats
+        totalParents={parents.length}
+        activeParents={activeParents}
+        inactiveParents={inactiveParents}
+        guardians={guardians}
+      />
+
+      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <ParentFilters
+          searchTerm={searchTerm}
+          relationshipFilter={relationshipFilter}
+          statusFilter={statusFilter}
+          onSearchChange={setSearchTerm}
+          onRelationshipFilterChange={setRelationshipFilter}
+          onStatusFilterChange={setStatusFilter}
+        />
+
+        <ParentTable parents={filteredParents} />
+      </section>
+
+      <AddParentModal
+        isOpen={isModalOpen}
+        isEditing={isEditing}
+        formData={formData}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleFormSubmit}
+        onFormChange={setFormData}
+      />
+    </div>
+  );
+}
+
+export default ParentsPage;
