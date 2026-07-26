@@ -15,6 +15,8 @@ import ParentDetailsPage from "./features/parents/pages/ParentDetailsPage";
 import ClassesPage from "./features/classes/pages/ClassesPage";
 import ClassesProvider from "./features/classes/context/ClassesProvider";
 import ClassDetailsPage from "./features/classes/pages/ClassDetailsPage";
+import AttendancePage from "./features/attendance/pages/AttendancePage";
+import AttendanceProvider from "./features/attendance/context/AttendanceProvider";
 
 function App() {
   return (
@@ -22,6 +24,7 @@ function App() {
   <TeachersProvider>
     <ParentsProvider>
        <ClassesProvider>
+        <AttendanceProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
@@ -41,7 +44,7 @@ function App() {
             <Route path="/parents/:parentId" element={<ParentDetailsPage />} />
             <Route path="/classes" element={<ClassesPage />} />
             <Route path="/classes/:classId" element={<ClassDetailsPage />} />
-            <Route path="/attendance" element={<PlaceholderPage />} />
+            <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<PlaceholderPage />} />
             <Route path="/fees" element={<PlaceholderPage />} />
             <Route path="/settings" element={<PlaceholderPage />} />
@@ -50,6 +53,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
           </BrowserRouter>
+          </AttendanceProvider>
       </ClassesProvider>
     </ParentsProvider>
   </TeachersProvider>
