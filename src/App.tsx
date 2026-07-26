@@ -21,6 +21,8 @@ import ResultsPage from "./features/results/pages/ResultsPage";
 import ResultsProvider from "./features/results/context/ResultsProvider";
 import FeesPage from "./features/fees/pages/FeesPage";
 import FeesProvider from "./features/fees/context/FeesProvider";
+import TimetablePage from "./features/timetable/pages/TimetablePage";
+import TimetableProvider from "./features/timetable/context/TimetableProvider";
 
 function App() {
   return (
@@ -49,6 +51,7 @@ function App() {
             <Route path="/parents" element={<ParentsPage />} />
             <Route path="/parents/:parentId" element={<ParentDetailsPage />} />
             <Route path="/classes" element={<ClassesPage />} />
+            <Route path="/timetable" element={<TimetablePage />} />
             <Route path="/classes/:classId" element={<ClassDetailsPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />
