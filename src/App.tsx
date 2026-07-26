@@ -19,6 +19,8 @@ import AttendancePage from "./features/attendance/pages/AttendancePage";
 import AttendanceProvider from "./features/attendance/context/AttendanceProvider";
 import ResultsPage from "./features/results/pages/ResultsPage";
 import ResultsProvider from "./features/results/context/ResultsProvider";
+import FeesPage from "./features/fees/pages/FeesPage";
+import FeesProvider from "./features/fees/context/FeesProvider";
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
        <ClassesProvider>
         <AttendanceProvider>
           <ResultsProvider>
+            <FeesProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
@@ -49,13 +52,14 @@ function App() {
             <Route path="/classes/:classId" element={<ClassDetailsPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
             <Route path="/results" element={<ResultsPage />} />
-            <Route path="/fees" element={<PlaceholderPage />} />
+            <Route path="/fees" element={<FeesPage />} />
             <Route path="/settings" element={<PlaceholderPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
           </BrowserRouter>
+          </FeesProvider>
           </ResultsProvider>
           </AttendanceProvider>
       </ClassesProvider>
