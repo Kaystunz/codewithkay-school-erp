@@ -26,6 +26,8 @@ import TimetableProvider from "./features/timetable/context/TimetableProvider";
 import AssignmentsPage from "./features/assignments/pages/AssignmentsPage";
 import AssignmentsProvider from "./features/assignments/context/AssignmentsProvider";
 import AssignmentDetailsPage from "./features/assignments/pages/AssignmentDetailsPage";
+import AnnouncementsPage from "./features/announcements/pages/AnnouncementsPage";
+import AnnouncementsProvider from "./features/announcements/context/AnnouncementsProvider";
 
 function App() {
   return (
@@ -38,6 +40,7 @@ function App() {
             <FeesProvider>
               <TimetableProvider>
                 <AssignmentsProvider>
+                  <AnnouncementsProvider>
             <BrowserRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
@@ -58,6 +61,7 @@ function App() {
             <Route path="/classes" element={<ClassesPage />} />
             <Route path="/assignments"  element={<AssignmentsPage />} />
             <Route path="/timetable" element={<TimetablePage />} />
+            <Route path="/announcements"element={<AnnouncementsPage />}/>
             <Route path="/classes/:classId" element={<ClassDetailsPage />} />
             <Route path="/assignments/:assignmentId"  element={<AssignmentDetailsPage />} />
             <Route path="/attendance" element={<AttendancePage />} />
@@ -69,6 +73,7 @@ function App() {
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
           </BrowserRouter>
+          </AnnouncementsProvider>
           </AssignmentsProvider>
           </TimetableProvider>
           </FeesProvider>
