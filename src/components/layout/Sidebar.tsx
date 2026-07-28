@@ -1,10 +1,14 @@
 import {
+  BarChart3,
   BookOpen,
   CalendarCheck,
+  CalendarDays,
+  ClipboardList,
   CreditCard,
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   Menu,
   School,
   Settings,
@@ -60,6 +64,27 @@ const navigationItems = [
     path: "/fees",
     icon: CreditCard,
   },
+  {
+  label: "Timetable",
+  path: "/timetable",
+  icon: CalendarDays,
+},
+{
+  label: "Assignments",
+  path: "/assignments",
+  icon: ClipboardList,
+},
+{
+  label: "Announcements",
+  path: "/announcements",
+  icon: Megaphone,
+},
+
+  {
+  label: "Reports",
+  path: "/reports",
+  icon: BarChart3,
+},
 ];
 
 function Sidebar({ isOpen, onClose }: SidebarProps) {

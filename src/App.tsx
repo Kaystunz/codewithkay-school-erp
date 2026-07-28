@@ -28,6 +28,7 @@ import AssignmentsProvider from "./features/assignments/context/AssignmentsProvi
 import AssignmentDetailsPage from "./features/assignments/pages/AssignmentDetailsPage";
 import AnnouncementsPage from "./features/announcements/pages/AnnouncementsPage";
 import AnnouncementsProvider from "./features/announcements/context/AnnouncementsProvider";
+import ReportsPage from "./features/reports/pages/ReportsPage";
 
 function App() {
   return (
@@ -61,6 +62,7 @@ function App() {
             <Route path="/classes" element={<ClassesPage />} />
             <Route path="/assignments"  element={<AssignmentsPage />} />
             <Route path="/timetable" element={<TimetablePage />} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/announcements"element={<AnnouncementsPage />}/>
             <Route path="/classes/:classId" element={<ClassDetailsPage />} />
             <Route path="/assignments/:assignmentId"  element={<AssignmentDetailsPage />} />
