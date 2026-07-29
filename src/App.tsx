@@ -25,6 +25,8 @@ import ParentsPage from "./features/parents/pages/ParentsPage";
 import ParentsProvider from "./features/parents/context/ParentsProvider";
 import ParentDetailsPage from "./features/parents/pages/ParentDetailsPage";
 
+import AccountsPage from "./features/accounts/pages/AccountsPage";
+
 import ClassesPage from "./features/classes/pages/ClassesPage";
 import ClassesProvider from "./features/classes/context/ClassesProvider";
 import ClassDetailsPage from "./features/classes/pages/ClassDetailsPage";
@@ -50,6 +52,8 @@ import AnnouncementsProvider from "./features/announcements/context/Announcement
 
 import ReportsPage from "./features/reports/pages/ReportsPage";
 import { RoleGuard } from "./features/auth/components/RoleGuard";
+
+
 function App() {
   return (
     <StudentsProvider>
@@ -92,6 +96,10 @@ function App() {
           />
         </Route>
 
+        <Route element={<RoleGuard permission="accounts" />}>
+        <Route path="/accounts" element={<AccountsPage />} />
+      </Route>
+
         <Route element={<RoleGuard permission="parents" />}>
           <Route path="/parents" element={<ParentsPage />} />
           <Route
@@ -99,6 +107,17 @@ function App() {
             element={<ParentDetailsPage />}
           />
         </Route>
+
+        <Route element={<RoleGuard permission="accounts" />}>
+        <Route path="/accounts" element={<AccountsPage />} />
+      </Route>
+
+        <Route element={<RoleGuard permission="accounts" />}>
+        <Route
+          path="/accounts"
+          element={<AccountsPage />}
+        />
+      </Route>
 
         <Route element={<RoleGuard permission="classes" />}>
           <Route path="/classes" element={<ClassesPage />} />

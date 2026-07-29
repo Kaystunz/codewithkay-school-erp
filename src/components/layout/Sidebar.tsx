@@ -57,6 +57,12 @@ const navigationItems = [
     permission: "parents",
   },
   {
+  label: "Accounts",
+  path: "/accounts",
+  icon: Users,
+  permission: "accounts",
+  },
+  {
     label: "Classes",
     path: "/classes",
     icon: School,

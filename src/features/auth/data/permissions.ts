@@ -4,11 +4,12 @@ export const permissions: Record<
   UserRole,
   string[]
 > = {
-  Admin: [
+    Admin: [
     "dashboard",
     "students",
     "teachers",
     "parents",
+    "accounts",
     "classes",
     "attendance",
     "results",
@@ -18,7 +19,7 @@ export const permissions: Record<
     "announcements",
     "reports",
     "settings",
-  ],
+    ],
 
   Teacher: [
     "dashboard",

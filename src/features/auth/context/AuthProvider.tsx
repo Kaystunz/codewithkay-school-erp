@@ -5,6 +5,7 @@ import {
 } from "react";
 
 import { AuthContext } from "./AuthContext";
+import { useAccountsContext } from "../../accounts/hooks/useAccountsContext";
 
 import type {
   AuthUser,
@@ -16,52 +17,19 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
-const demoUsers = [
-  {
-    id: 1,
-    name: "School Administrator",
-    email: "admin@fareedahschool.com",
-    password: "admin123",
-    role: "Admin" as const,
-    phone: "",
-    address: "",
-    profileImage: "",
-  },
-  {
-    id: 2,
-    name: "Demo Teacher",
-    email: "teacher@fareedahschool.com",
-    password: "teacher123",
-    role: "Teacher" as const,
-    phone: "",
-    address: "",
-    profileImage: "",
-  },
-  {
-    id: 3,
-    name: "Demo Parent",
-    email: "parent@fareedahschool.com",
-    password: "parent123",
-    role: "Parent" as const,
-    phone: "",
-    address: "",
-    profileImage: "",
-  },
-  {
-    id: 4,
-    name: "Demo Student",
-    email: "student@fareedahschool.com",
-    password: "student123",
-    role: "Student" as const,
-    phone: "",
-    address: "",
-    profileImage: "",
-  },
-];
+const AUTH_STORAGE_KEY =
+  "fareedah-auth-user";
 
 export function AuthProvider({
   children,
 }: AuthProviderProps) {
+  const {
+    accounts,
+    findAccountByCredentials,
+    updateLastLogin,
+    updateAccountProfile,
+  } = useAccountsContext();
+
   const [user, setUser] =
     useState<AuthUser | null>(null);
 
@@ -69,85 +37,96 @@ export function AuthProvider({
     useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem(
-      "fareedah-auth-user"
+  const storedUser = localStorage.getItem(AUTH_STORAGE_KEY);
+
+  if (!storedUser) {
+    setIsLoading(false);
+    return;
+  }
+
+  try {
+    const parsedUser = JSON.parse(storedUser) as AuthUser;
+
+    const matchingAccount = accounts.find(
+      (account) => account.id === parsedUser.id
     );
 
-    if (storedUser) {
-      try {
-        const parsedUser =
-          JSON.parse(storedUser) as AuthUser;
-
-        setUser({
-          ...parsedUser,
-          phone: parsedUser.phone ?? "",
-          address: parsedUser.address ?? "",
-          profileImage:
-            parsedUser.profileImage ?? "",
-        });
-      } catch {
-        localStorage.removeItem(
-          "fareedah-auth-user"
-        );
-      }
+    if (!matchingAccount || matchingAccount.status === "Disabled") {
+      localStorage.removeItem(AUTH_STORAGE_KEY);
+      setUser(null);
+      setIsLoading(false);
+      return;
     }
 
+    const restoredUser: AuthUser = {
+      id: matchingAccount.id,
+      name: matchingAccount.name,
+      email: matchingAccount.email,
+      role: matchingAccount.role,
+      phone: matchingAccount.phone ?? "",
+      address: matchingAccount.address ?? "",
+      profileImage: matchingAccount.profileImage ?? "",
+    };
+
+    setUser(restoredUser);
+    localStorage.setItem(
+      AUTH_STORAGE_KEY,
+      JSON.stringify(restoredUser)
+    );
+  } catch {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    setUser(null);
+  } finally {
     setIsLoading(false);
-  }, []);
+  }
+
+  // Restore the session only when the provider first mounts.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   async function login(
     credentials: LoginCredentials
   ) {
-    const normalizedEmail =
-      credentials.email.trim().toLowerCase();
+    const matchedAccount =
+      findAccountByCredentials(
+        credentials.email,
+        credentials.password
+      );
 
-    const matchedUser = demoUsers.find(
-      (demoUser) =>
-        demoUser.email.toLowerCase() ===
-          normalizedEmail &&
-        demoUser.password ===
-          credentials.password
-    );
-
-    if (!matchedUser) {
+    if (!matchedAccount) {
       throw new Error(
         "Invalid email or password."
       );
     }
 
-    const savedProfiles = JSON.parse(
-      localStorage.getItem(
-        "fareedah-user-profiles"
-      ) ?? "{}"
-    ) as Record<number, Partial<AuthUser>>;
-
-    const savedProfile =
-      savedProfiles[matchedUser.id];
+    if (
+      matchedAccount.status === "Disabled"
+    ) {
+      throw new Error(
+        "This account has been disabled. Contact the school administrator."
+      );
+    }
 
     const authenticatedUser: AuthUser = {
-      id: matchedUser.id,
-      name:
-        savedProfile?.name ??
-        matchedUser.name,
-      email: matchedUser.email,
-      role: matchedUser.role,
-      phone:
-        savedProfile?.phone ??
-        matchedUser.phone,
+      id: matchedAccount.id,
+      name: matchedAccount.name,
+      email: matchedAccount.email,
+      role: matchedAccount.role,
+      phone: matchedAccount.phone ?? "",
       address:
-        savedProfile?.address ??
-        matchedUser.address,
+        matchedAccount.address ?? "",
       profileImage:
-        savedProfile?.profileImage ??
-        matchedUser.profileImage,
+        matchedAccount.profileImage ?? "",
     };
 
     setUser(authenticatedUser);
 
     localStorage.setItem(
-      "fareedah-auth-user",
+      AUTH_STORAGE_KEY,
       JSON.stringify(authenticatedUser)
     );
+
+    updateLastLogin(matchedAccount.id);
   }
 
   function updateProfile(
@@ -162,27 +141,26 @@ export function AuthProvider({
       name: profileData.name.trim(),
       phone: profileData.phone.trim(),
       address: profileData.address.trim(),
-      profileImage: profileData.profileImage,
+      profileImage:
+        profileData.profileImage,
     };
 
     setUser(updatedUser);
 
     localStorage.setItem(
-      "fareedah-auth-user",
+      AUTH_STORAGE_KEY,
       JSON.stringify(updatedUser)
     );
 
-    const savedProfiles = JSON.parse(
-      localStorage.getItem(
-        "fareedah-user-profiles"
-      ) ?? "{}"
-    ) as Record<number, Partial<AuthUser>>;
-
-    savedProfiles[user.id] = updatedUser;
-
-    localStorage.setItem(
-      "fareedah-user-profiles",
-      JSON.stringify(savedProfiles)
+    updateAccountProfile(
+      user.id,
+      {
+        name: updatedUser.name,
+        phone: updatedUser.phone,
+        address: updatedUser.address,
+        profileImage:
+          updatedUser.profileImage,
+      }
     );
   }
 
@@ -190,7 +168,7 @@ export function AuthProvider({
     setUser(null);
 
     localStorage.removeItem(
-      "fareedah-auth-user"
+      AUTH_STORAGE_KEY
     );
   }
 
@@ -198,7 +176,8 @@ export function AuthProvider({
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: Boolean(user),
+        isAuthenticated:
+          Boolean(user),
         isLoading,
         login,
         logout,
