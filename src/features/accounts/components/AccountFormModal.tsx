@@ -9,6 +9,9 @@ import type {
   AccountSubmitResult,
 } from "../types/account";
 
+import { useSchoolDirectory } from "../../directory/hooks/useSchoolDirectory";
+
+import type { DirectoryRole } from "../../directory/types/directory";
 type AccountFormModalProps = {
   isOpen: boolean;
   isEditing: boolean;
@@ -28,6 +31,61 @@ function AccountFormModal({
   onClose,
   onSubmit,
 }: AccountFormModalProps) {
+    const { getPeopleByRole } = useSchoolDirectory();
+
+const isDirectoryRole =
+  formData.role === "Teacher" ||
+  formData.role === "Student" ||
+  formData.role === "Parent";
+
+const directoryPeople = isDirectoryRole
+  ? getPeopleByRole(formData.role as DirectoryRole)
+  : [];
+
+const selectedDirectoryId =
+  isDirectoryRole && formData.linkedRecordId
+    ? `${formData.role}-${formData.linkedRecordId}`
+    : "";
+
+function handleRoleChange(
+  role: AccountFormData["role"]
+) {
+  setFormData((current) => ({
+    ...current,
+    role,
+    linkedRecordId: "",
+    name: role === "Admin" ? current.name : "",
+    email: role === "Admin" ? current.email : "",
+  }));
+}
+
+function handleDirectoryPersonChange(
+  directoryId: string
+) {
+  const selectedPerson = directoryPeople.find(
+    (person) => person.id === directoryId
+  );
+
+  if (!selectedPerson) {
+    setFormData((current) => ({
+      ...current,
+      linkedRecordId: "",
+      name: "",
+      email: "",
+    }));
+
+    return;
+  }
+
+  setFormData((current) => ({
+    ...current,
+    linkedRecordId:
+      selectedPerson.linkedRecordId.toString(),
+    name: selectedPerson.name,
+    email: selectedPerson.email,
+  }));
+}
+
   if (!isOpen) {
     return null;
   }
@@ -169,11 +227,9 @@ function AccountFormModal({
                 id="account-role"
                 value={formData.role}
                 onChange={(event) =>
-                  setFormData((current) => ({
-                    ...current,
-                    role: event.target
-                      .value as AccountFormData["role"],
-                  }))
+                handleRoleChange(
+                    event.target.value as AccountFormData["role"]
+                )
                 }
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
               >
@@ -216,33 +272,55 @@ function AccountFormModal({
             </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="linked-record"
-              className="mb-1 block text-sm font-medium text-slate-700"
-            >
-              Linked record ID
-              <span className="ml-1 font-normal text-slate-400">
-                Optional
-              </span>
-            </label>
+        {isDirectoryRole && (
+  <div>
+    <label
+      htmlFor="directory-person"
+      className="mb-1 block text-sm font-medium text-slate-700"
+    >
+      Select {formData.role.toLowerCase()}
+    </label>
 
-            <input
-              id="linked-record"
-              type="number"
-              min="1"
-              value={formData.linkedRecordId}
-              onChange={(event) =>
-                setFormData((current) => ({
-                  ...current,
-                  linkedRecordId:
-                    event.target.value,
-                }))
-              }
-              placeholder="Student, teacher or parent ID"
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
-            />
-          </div>
+    <select
+      id="directory-person"
+      value={selectedDirectoryId}
+      onChange={(event) =>
+        handleDirectoryPersonChange(
+          event.target.value
+        )
+      }
+      className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+    >
+      <option value="">
+        Select a {formData.role.toLowerCase()}
+      </option>
+
+      {directoryPeople.map((person) => (
+        <option
+          key={person.id}
+          value={person.id}
+        >
+          {person.name}
+          {person.secondaryLabel
+            ? ` — ${person.secondaryLabel}`
+            : ""}
+        </option>
+      ))}
+        </select>
+
+        {directoryPeople.length === 0 && (
+        <p className="mt-2 text-sm text-amber-600">
+            No active {formData.role.toLowerCase()} records
+            are available.
+        </p>
+        )}
+
+        <p className="mt-1 text-xs text-slate-500">
+        Selecting a record automatically fills the name
+        and email address.
+        </p>
+    </div>
+    )}
 
           <div className="flex justify-end gap-3 border-t border-slate-200 pt-5">
             <button
