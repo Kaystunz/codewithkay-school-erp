@@ -2,6 +2,7 @@ import { Mail, MoreHorizontal, Phone } from "lucide-react";
 import type { Student } from "../types/student";
 import { useNavigate } from "react-router-dom";
 import { useStudentsContext } from "../hooks/useStudentsContext";
+import AccountStatusBadge from "../../accounts/components/AccountStatusBadge";
 
 type StudentRowProps = {
   student: Student;
@@ -70,6 +71,13 @@ function StudentRow({ student }: StudentRowProps) {
           {student.status}
         </span>
       </td>
+
+      <td className="px-5 py-5">
+      <AccountStatusBadge
+        role="Student"
+        linkedRecordId={student.id}
+      />
+    </td>
 
       <td className="px-5 py-5 text-right">
             <button

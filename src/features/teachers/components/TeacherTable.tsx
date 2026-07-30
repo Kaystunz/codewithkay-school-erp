@@ -19,6 +19,12 @@ function TeacherTable({
             <th className="px-5 py-4">Subject</th>
             <th className="px-5 py-4">Contact</th>
             <th className="px-5 py-4">Status</th>
+            <th className="px-5 py-4">Status</th>
+            <th className="px-5 py-4">Login Account</th>
+
+            <th className="px-5 py-4 text-right">
+              Action
+            </th>
             <th className="px-5 py-4 text-right">
               Action
             </th>

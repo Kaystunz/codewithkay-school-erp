@@ -2,6 +2,7 @@ import { Eye, Pencil } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Teacher } from "../types/teacher";
 import { useTeachersContext } from "../hooks/useTeachersContext";
+import AccountStatusBadge from "../../accounts/components/AccountStatusBadge";
 
 type TeacherRowProps = {
   teacher: Teacher;
@@ -69,6 +70,13 @@ function TeacherRow({ teacher }: TeacherRowProps) {
           {teacher.status}
         </span>
       </td>
+
+      <td className="px-5 py-4">
+      <AccountStatusBadge
+        role="Teacher"
+        linkedRecordId={teacher.id}
+      />
+    </td>
 
       <td className="px-5 py-4">
         <div className="flex justify-end gap-2">

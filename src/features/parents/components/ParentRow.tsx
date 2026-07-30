@@ -2,6 +2,7 @@ import { Eye, Pencil } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { Parent } from "../types/parents";
 import { useParentsContext } from "../hooks/useParentsContext";
+import AccountStatusBadge from "../../accounts/components/AccountStatusBadge";
 
 type ParentRowProps = {
   parent: Parent;
@@ -67,6 +68,13 @@ function ParentRow({ parent }: ParentRowProps) {
           {parent.status}
         </span>
       </td>
+
+      <td className="px-5 py-4">
+      <AccountStatusBadge
+        role="Parent"
+        linkedRecordId={parent.id}
+      />
+    </td>
 
       <td className="px-5 py-4">
         <div className="flex justify-end gap-2">
