@@ -5,6 +5,7 @@ import type {
 } from "react";
 
 import type {
+    Account,
   AccountFormData,
   AccountSubmitResult,
 } from "../types/account";
@@ -15,6 +16,8 @@ import type { DirectoryRole } from "../../directory/types/directory";
 type AccountFormModalProps = {
   isOpen: boolean;
   isEditing: boolean;
+  editingAccountId: number | null;
+  accounts: Account[];
   formData: AccountFormData;
   setFormData: Dispatch<
     SetStateAction<AccountFormData>
@@ -26,6 +29,8 @@ type AccountFormModalProps = {
 function AccountFormModal({
   isOpen,
   isEditing,
+  editingAccountId,
+  accounts,
   formData,
   setFormData,
   onClose,
@@ -38,9 +43,26 @@ const isDirectoryRole =
   formData.role === "Student" ||
   formData.role === "Parent";
 
-const directoryPeople = isDirectoryRole
+const allDirectoryPeople = isDirectoryRole
   ? getPeopleByRole(formData.role as DirectoryRole)
   : [];
+
+const directoryPeople = allDirectoryPeople.filter(
+  (person) => {
+    const linkedAccount = accounts.find(
+      (account) =>
+        account.role === person.role &&
+        account.linkedRecordId ===
+          person.linkedRecordId
+    );
+
+    if (!linkedAccount) {
+      return true;
+    }
+
+    return linkedAccount.id === editingAccountId;
+  }
+);
 
 const selectedDirectoryId =
   isDirectoryRole && formData.linkedRecordId
@@ -310,8 +332,8 @@ function handleDirectoryPersonChange(
 
         {directoryPeople.length === 0 && (
         <p className="mt-2 text-sm text-amber-600">
-            No active {formData.role.toLowerCase()} records
-            are available.
+            No available {formData.role.toLowerCase()} records
+            were found. They may already have accounts.
         </p>
         )}
 

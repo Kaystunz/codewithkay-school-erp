@@ -242,10 +242,11 @@ export function useAccounts() {
       };
     }
 
-    const linkedRecordId =
-      formData.linkedRecordId.trim()
-        ? Number(formData.linkedRecordId)
-        : undefined;
+   const linkedRecordId =
+    formData.role !== "Admin" &&
+    formData.linkedRecordId.trim()
+    ? Number(formData.linkedRecordId)
+    : undefined;
 
     if (
       linkedRecordId !== undefined &&
@@ -258,6 +259,37 @@ export function useAccounts() {
           "Linked record ID must be a positive number.",
       };
     }
+
+    const requiresLinkedRecord =
+  formData.role === "Teacher" ||
+  formData.role === "Student" ||
+  formData.role === "Parent";
+
+if (
+  requiresLinkedRecord &&
+  linkedRecordId === undefined
+) {
+  return {
+    success: false,
+    message: `Select a ${formData.role.toLowerCase()} record for this account.`,
+  };
+}
+
+const linkedRecordAlreadyHasAccount =
+  linkedRecordId !== undefined &&
+  accounts.some(
+    (account) =>
+      account.id !== editingAccountId &&
+      account.role === formData.role &&
+      account.linkedRecordId === linkedRecordId
+  );
+
+if (linkedRecordAlreadyHasAccount) {
+  return {
+    success: false,
+    message: `This ${formData.role.toLowerCase()} already has an account.`,
+  };
+}
 
     if (editingAccountId !== null) {
       setAccounts((currentAccounts) =>

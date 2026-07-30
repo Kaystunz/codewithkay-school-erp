@@ -15,6 +15,8 @@ function AccountsPage() {
     activeAccounts,
     disabledAccounts,
     adminAccounts,
+    
+     editingAccountId,
 
     searchTerm,
     setSearchTerm,
@@ -131,6 +133,8 @@ function AccountsPage() {
       <AccountFormModal
         isOpen={isModalOpen}
         isEditing={isEditing}
+        editingAccountId={editingAccountId}
+        accounts={accounts}
         formData={formData}
         setFormData={setFormData}
         onClose={closeAccountModal}
