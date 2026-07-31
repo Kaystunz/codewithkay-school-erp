@@ -4,6 +4,9 @@ import type {
   AttendanceRecord,
   AttendanceStatus,
 } from "../types/attendance";
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+import { activityEvents } from "../../activity/utils/activityEvents";
+import { useClassesContext } from "../../classes/hooks/useClassesContext";
 
 type AttendanceDraft = {
   studentId: number;
@@ -22,6 +25,8 @@ type SaveResult =
     };
 
 export function useAttendance() {
+  const { addActivity } = useActivityContext();
+  const { classes } = useClassesContext();
   const [attendanceRecords, setAttendanceRecords] =
     useState<AttendanceRecord[]>(initialAttendance);
 
@@ -138,6 +143,17 @@ const attendancePercentage =
   }
 
   function saveAttendance(): SaveResult {
+
+    const selectedClass = classes.find(
+  (schoolClass) =>
+    schoolClass.id === selectedClassId
+);
+
+const className = selectedClass
+  ? `${selectedClass.name} ${selectedClass.section}`
+  : `Class ${selectedClassId}`;
+
+  
     if (!selectedClassId) {
       return {
         success: false,
@@ -189,6 +205,18 @@ const attendancePercentage =
         ...savedRecords,
       ];
     });
+
+    addActivity(
+    activityEvents.attendanceSaved({
+    className,
+    date: selectedDate,
+    savedCount: draftAttendance.length,
+    presentCount,
+    absentCount,
+    lateCount,
+    excusedCount,
+  })
+);
 
     return {
       success: true,

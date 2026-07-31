@@ -19,6 +19,16 @@ type AccountActivityData = {
   role: string;
 };
 
+type AttendanceActivityData = {
+  className: string;
+  date: string;
+  savedCount: number;
+  presentCount: number;
+  absentCount: number;
+  lateCount: number;
+  excusedCount: number;
+};
+
 export const activityEvents = {
   studentAdded(
     student: StudentActivityData
@@ -168,4 +178,15 @@ export const activityEvents = {
       actor: "System",
     };
   },
+
+  attendanceSaved(
+  attendance: AttendanceActivityData
+): ActivityLogData {
+  return {
+    title: "Attendance Saved",
+    description: `Attendance for ${attendance.className} on ${attendance.date} was saved for ${attendance.savedCount} students: ${attendance.presentCount} present, ${attendance.absentCount} absent, ${attendance.lateCount} late and ${attendance.excusedCount} excused.`,
+    category: "Attendance",
+    actor: "System",
+  };
+},
 };

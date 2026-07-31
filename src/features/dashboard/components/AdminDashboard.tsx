@@ -268,41 +268,49 @@ function AdminDashboardPage() {
         </article>
 
         <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900">
-              Recent activity
-            </h2>
+  <div>
+    <h2 className="text-lg font-bold text-slate-900">
+      Recent activity
+    </h2>
 
-            <p className="mt-1 text-sm text-slate-500">
-              Latest updates across the portal
+    <p className="mt-1 text-sm text-slate-500">
+      Latest updates across the portal
+    </p>
+  </div>
+
+  {recentActivities.length === 0 ? (
+    <p className="mt-6 text-sm text-slate-500">
+      No recent activity yet.
+    </p>
+  ) : (
+    <div className="mt-6 space-y-6">
+      {recentActivities.map((activity) => (
+        <div
+          key={activity.id}
+          className="flex gap-4"
+        >
+          <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-teal-600" />
+
+          <div>
+            <p className="font-semibold text-slate-800">
+              {activity.title}
+            </p>
+
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              {activity.description}
+            </p>
+
+            <p className="mt-1 text-xs text-slate-400">
+              {new Date(
+                activity.createdAt
+              ).toLocaleString()}
             </p>
           </div>
-
-          <div className="mt-6 space-y-6">
-            {recentActivities.map((activity) => (
-              <div
-                key={activity.title}
-                className="flex gap-4"
-              >
-                <div className="mt-1 h-3 w-3 shrink-0 rounded-full bg-teal-600" />
-
-                <div>
-                  <p className="font-semibold text-slate-800">
-                    {activity.title}
-                  </p>
-
-                  <p className="mt-1 text-sm leading-6 text-slate-500">
-                    {activity.description}
-                  </p>
-
-                  <p className="mt-1 text-xs text-slate-400">
-                    {new Date(activity.createdAt).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </article>
+        </div>
+      ))}
+    </div>
+  )}
+</article>
       </section>
     </div>
   );
