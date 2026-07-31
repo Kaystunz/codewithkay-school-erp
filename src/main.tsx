@@ -5,17 +5,22 @@ import "./index.css";
 
 import ToastProvider from "./components/ui/toast/ToastProvider";
 
-import { AuthProvider } from "./features/auth/context/AuthProvider";
+import { ActivityProvider } from "./features/activity/context/ActivityProvider";
 import AccountsProvider from "./features/accounts/context/AccountsProvider";
+import { AuthProvider } from "./features/auth/context/AuthProvider";
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(
+  document.getElementById("root")!
+).render(
   <React.StrictMode>
     <ToastProvider>
-      <AccountsProvider>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </AccountsProvider>
+      <ActivityProvider>
+        <AccountsProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </AccountsProvider>
+      </ActivityProvider>
     </ToastProvider>
   </React.StrictMode>
 );

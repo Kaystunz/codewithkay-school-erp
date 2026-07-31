@@ -4,7 +4,8 @@ import type {
   Student,
   StudentFormData,
 } from "../types/student";
-
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+import { activityEvents } from "../../activity/utils/activityEvents";
 const emptyStudentForm: StudentFormData = {
   name: "",
   admissionNumber: "",
@@ -27,6 +28,7 @@ type SubmitResult =
     };
 
 export function useStudents() {
+  const { addActivity } = useActivityContext();
   const [students, setStudents] =
     useState<Student[]>(initialStudents);
 
@@ -112,12 +114,24 @@ export function useStudents() {
   }
 
   function deleteStudent(studentId: number) {
-    setStudents((currentStudents) =>
-      currentStudents.filter(
-        (student) => student.id !== studentId
-      )
-    );
+  const studentToDelete = students.find(
+    (student) => student.id === studentId
+  );
+
+  if (!studentToDelete) {
+    return;
   }
+
+  setStudents((currentStudents) =>
+    currentStudents.filter(
+      (student) => student.id !== studentId
+    )
+  );
+
+ addActivity(
+  activityEvents.studentDeleted(studentToDelete)
+);
+}
 
   function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -206,28 +220,36 @@ export function useStudents() {
       email: trimmedEmail,
     };
 
-    if (isEditing) {
-      setStudents((currentStudents) =>
-        currentStudents.map((student) =>
-          student.id === editingStudentId
-            ? {
-                ...student,
-                ...cleanedFormData,
-              }
-            : student
-        )
-      );
-    } else {
-      const newStudent: Student = {
-        id: Date.now(),
-        ...cleanedFormData,
-      };
+   if (isEditing && editingStudentId !== null) {
+  setStudents((currentStudents) =>
+    currentStudents.map((student) =>
+      student.id === editingStudentId
+        ? {
+            ...student,
+            ...cleanedFormData,
+          }
+        : student
+    )
+  );
 
-      setStudents((currentStudents) => [
-        newStudent,
-        ...currentStudents,
-      ]);
-    }
+  addActivity(
+  activityEvents.studentUpdated(cleanedFormData)
+);
+} else {
+  const newStudent: Student = {
+    id: Date.now(),
+    ...cleanedFormData,
+  };
+
+  setStudents((currentStudents) => [
+    newStudent,
+    ...currentStudents,
+  ]);
+
+ addActivity(
+  activityEvents.studentAdded(newStudent)
+);
+}
 
     const action = isEditing
       ? "updated"

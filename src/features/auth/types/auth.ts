@@ -9,6 +9,9 @@ export type AuthUser = {
   name: string;
   email: string;
   role: UserRole;
+
+  linkedRecordId?: number;
+
   phone: string;
   address: string;
   profileImage: string;

@@ -5,6 +5,8 @@ import {
 } from "react";
 
 import { initialAccounts } from "../data/accounts";
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+import { createActivityLog } from "../../activity/utils/activityLogger";
 
 import type {
   Account,
@@ -50,6 +52,7 @@ function loadAccounts(): Account[] {
 }
 
 export function useAccounts() {
+  const { addActivity } = useActivityContext();
   const [accounts, setAccounts] =
     useState<Account[]>(loadAccounts);
 
@@ -311,6 +314,14 @@ if (linkedRecordAlreadyHasAccount) {
 
       closeAccountModal();
 
+            addActivity(
+  createActivityLog({
+    title: "Account Updated",
+    description: `${name}'s account was updated.`,
+    category: "Account",
+  })
+);
+
       return {
         success: true,
         action: "updated",
@@ -345,7 +356,14 @@ if (linkedRecordAlreadyHasAccount) {
       newAccount,
       ...currentAccounts,
     ]);
-
+      
+                addActivity(
+        createActivityLog({
+            title: "Account Created",
+            description: `${newAccount.name} (${newAccount.role}) account was created.`,
+            category: "Account",
+        })
+        );
     closeAccountModal();
 
     return {
@@ -368,6 +386,22 @@ if (linkedRecordAlreadyHasAccount) {
           : account
       )
     );
+    const account = accounts.find(
+  (account) => account.id === accountId
+);
+
+    if (account) {
+       addActivity(
+        createActivityLog({
+            title:
+            status === "Active"
+                ? "Account Enabled"
+                : "Account Disabled",
+            description: `${account.name}'s account is now ${status.toLowerCase()}.`,
+            category: "Account",
+        })
+        );
+    }
   }
 
   function openPasswordModal(
@@ -409,6 +443,20 @@ if (linkedRecordAlreadyHasAccount) {
     );
 
     closePasswordModal();
+
+            const account = accounts.find(
+        (account) => account.id === accountId
+        );
+
+        if (account) {
+            addActivity(
+        createActivityLog({
+            title: "Password Reset",
+            description: `Password was reset for ${account.name}.`,
+            category: "Account",
+        })
+        );
+        }
 
     return {
       success: true,

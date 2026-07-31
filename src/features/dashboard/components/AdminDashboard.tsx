@@ -11,24 +11,8 @@ import { useAttendanceContext } from "../../attendance/hooks/useAttendanceContex
 import { useFeesContext } from "../../fees/hooks/useFeesContext";
 import { useStudentsContext } from "../../students/hooks/useStudentsContext";
 import { useTeachersContext } from "../../teachers/hooks/useTeachersContext";
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
 
-const recentActivities = [
-  {
-    title: "New student registered",
-    detail: "Aminat Yusuf was added to Year 4",
-    time: "10 minutes ago",
-  },
-  {
-    title: "Attendance submitted",
-    detail: "Mrs. Lawal submitted Year 2 attendance",
-    time: "32 minutes ago",
-  },
-  {
-    title: "Payment received",
-    detail: "A payment was recorded successfully",
-    time: "1 hour ago",
-  },
-];
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -39,6 +23,7 @@ function formatCurrency(amount: number) {
 }
 
 function AdminDashboardPage() {
+    const { recentActivities } = useActivityContext();
   const {
     students,
     activeStudents,
@@ -307,11 +292,11 @@ function AdminDashboardPage() {
                   </p>
 
                   <p className="mt-1 text-sm leading-6 text-slate-500">
-                    {activity.detail}
+                    {activity.description}
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
-                    {activity.time}
+                    {new Date(activity.createdAt).toLocaleString()}
                   </p>
                 </div>
               </div>

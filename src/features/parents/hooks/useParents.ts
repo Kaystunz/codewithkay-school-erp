@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
 import { initialParents } from "../data/parents";
+
 import type {
   Parent,
   ParentFormData,
 } from "../types/parents";
+
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+import { activityEvents } from "../../activity/utils/activityEvents";
 
 const emptyParentForm: ParentFormData = {
   name: "",
@@ -28,6 +32,8 @@ type SubmitResult =
     };
 
 export function useParents() {
+  const { addActivity } = useActivityContext();
+
   const [parents, setParents] =
     useState<Parent[]>(initialParents);
 
@@ -113,7 +119,7 @@ export function useParents() {
       email: parent.email,
       address: parent.address,
       occupation: parent.occupation,
-      studentIds: parent.studentIds,
+      studentIds: [...parent.studentIds],
       status: parent.status,
     });
 
@@ -121,10 +127,22 @@ export function useParents() {
   }
 
   function deleteParent(parentId: number) {
+    const parentToDelete = parents.find(
+      (parent) => parent.id === parentId
+    );
+
+    if (!parentToDelete) {
+      return;
+    }
+
     setParents((currentParents) =>
       currentParents.filter(
         (parent) => parent.id !== parentId
       )
+    );
+
+    addActivity(
+      activityEvents.parentDeleted(parentToDelete)
     );
   }
 
@@ -200,7 +218,7 @@ export function useParents() {
       occupation: trimmedOccupation,
     };
 
-    if (isEditing) {
+    if (isEditing && editingParentId !== null) {
       setParents((currentParents) =>
         currentParents.map((parent) =>
           parent.id === editingParentId
@@ -210,6 +228,10 @@ export function useParents() {
               }
             : parent
         )
+      );
+
+      addActivity(
+        activityEvents.parentUpdated(cleanedFormData)
       );
     } else {
       const newParent: Parent = {
@@ -221,6 +243,10 @@ export function useParents() {
         newParent,
         ...currentParents,
       ]);
+
+      addActivity(
+        activityEvents.parentAdded(newParent)
+      );
     }
 
     const action = isEditing

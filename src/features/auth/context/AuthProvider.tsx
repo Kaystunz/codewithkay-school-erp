@@ -63,6 +63,7 @@ export function AuthProvider({
       name: matchingAccount.name,
       email: matchingAccount.email,
       role: matchingAccount.role,
+      linkedRecordId: matchingAccount.linkedRecordId,
       phone: matchingAccount.phone ?? "",
       address: matchingAccount.address ?? "",
       profileImage: matchingAccount.profileImage ?? "",
@@ -112,6 +113,7 @@ export function AuthProvider({
       name: matchedAccount.name,
       email: matchedAccount.email,
       role: matchedAccount.role,
+      linkedRecordId: matchedAccount.linkedRecordId,
       phone: matchedAccount.phone ?? "",
       address:
         matchedAccount.address ?? "",

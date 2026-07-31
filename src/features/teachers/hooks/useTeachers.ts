@@ -4,6 +4,9 @@ import type {
   Teacher,
   TeacherFormData,
 } from "../types/teacher";
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+
+import { activityEvents } from "../../activity/utils/activityEvents";
 
 const emptyTeacherForm: TeacherFormData = {
   name: "",
@@ -29,6 +32,7 @@ type SubmitResult =
     };
 
 export function useTeachers() {
+  const { addActivity } = useActivityContext();
   const [teachers, setTeachers] =
     useState<Teacher[]>(initialTeachers);
 
@@ -123,12 +127,24 @@ export function useTeachers() {
   }
 
   function deleteTeacher(teacherId: number) {
-    setTeachers((currentTeachers) =>
-      currentTeachers.filter(
-        (teacher) => teacher.id !== teacherId
-      )
-    );
+  const teacherToDelete = teachers.find(
+    (teacher) => teacher.id === teacherId
+  );
+
+  if (!teacherToDelete) {
+    return;
   }
+
+  setTeachers((currentTeachers) =>
+    currentTeachers.filter(
+      (teacher) => teacher.id !== teacherId
+    )
+  );
+
+  addActivity(
+  activityEvents.teacherDeleted(teacherToDelete)
+);
+}
 
   function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -225,28 +241,37 @@ export function useTeachers() {
       qualification: trimmedQualification,
     };
 
-    if (isEditing) {
-      setTeachers((currentTeachers) =>
-        currentTeachers.map((teacher) =>
-          teacher.id === editingTeacherId
-            ? {
-                ...teacher,
-                ...cleanedFormData,
-              }
-            : teacher
-        )
-      );
-    } else {
-      const newTeacher: Teacher = {
-        id: Date.now(),
-        ...cleanedFormData,
-      };
+   if (isEditing && editingTeacherId !== null) {
+  setTeachers((currentTeachers) =>
+    currentTeachers.map((teacher) =>
+      teacher.id === editingTeacherId
+        ? {
+            ...teacher,
+            ...cleanedFormData,
+          }
+        : teacher
+    )
+  );
 
-      setTeachers((currentTeachers) => [
-        newTeacher,
-        ...currentTeachers,
-      ]);
-    }
+  addActivity(
+  activityEvents.teacherUpdated(cleanedFormData)
+);
+
+} else {
+  const newTeacher: Teacher = {
+    id: Date.now(),
+    ...cleanedFormData,
+  };
+
+  setTeachers((currentTeachers) => [
+    newTeacher,
+    ...currentTeachers,
+  ]);
+
+ addActivity(
+  activityEvents.teacherAdded(newTeacher)
+);
+}
 
     const action = isEditing
       ? "updated"
