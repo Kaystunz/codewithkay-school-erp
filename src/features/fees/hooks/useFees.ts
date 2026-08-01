@@ -17,6 +17,9 @@ import {
   calculateFeeStatus,
 } from "../utils/fees";
 
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+import { activityEvents } from "../../activity/utils/activityEvents";
+
 const emptyFeeForm: FeeFormData = {
   studentId: 0,
   classId: 0,
@@ -59,6 +62,8 @@ type PaymentResult =
     };
 
 export function useFees() {
+    const { addActivity } = useActivityContext();
+
   const [fees, setFees] =
     useState<FeeRecord[]>(initialFees);
 
@@ -203,18 +208,34 @@ function closePaymentHistory() {
   }
 
   function deleteFee(feeId: number) {
-    setFees((currentFees) =>
-      currentFees.filter(
-        (fee) => fee.id !== feeId
-      )
-    );
+  const feeToDelete = fees.find(
+    (fee) => fee.id === feeId
+  );
 
-    setPayments((currentPayments) =>
-      currentPayments.filter(
-        (payment) => payment.feeId !== feeId
-      )
-    );
+  if (!feeToDelete) {
+    return;
   }
+
+  setFees((currentFees) =>
+    currentFees.filter(
+      (fee) => fee.id !== feeId
+    )
+  );
+
+  setPayments((currentPayments) =>
+    currentPayments.filter(
+      (payment) => payment.feeId !== feeId
+    )
+  );
+
+  addActivity(
+    activityEvents.feeDeleted({
+      studentId: feeToDelete.studentId,
+      feeType: feeToDelete.feeType,
+      amount: feeToDelete.amountDue,
+    })
+  );
+}
 
   function handleFeeSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -352,6 +373,13 @@ function closePaymentHistory() {
             : fee
         )
       );
+            addActivity(
+         activityEvents.feeUpdated({
+            studentId: cleanedFormData.studentId,
+            feeType: cleanedFormData.feeType,
+            amount: cleanedFormData.amountDue,
+        })
+        );
     } else {
       const newFee: FeeRecord = {
         id: Date.now(),
@@ -364,6 +392,14 @@ function closePaymentHistory() {
         newFee,
         ...currentFees,
       ]);
+
+      addActivity(
+         activityEvents.feeAdded({
+            studentId: newFee.studentId,
+            feeType: newFee.feeType,
+            amount: newFee.amountDue,
+        })
+        );
     }
 
     const action = isEditingFee
@@ -486,6 +522,14 @@ function closePaymentHistory() {
     );
 
     const amount = paymentFormData.amount;
+
+    addActivity(
+    activityEvents.paymentRecorded({
+        studentId: paymentFormData.studentId,
+        feeType: fee.feeType,
+        amount: paymentFormData.amount,
+    })
+    );
 
     setPaymentFormData(emptyPaymentForm);
     setSelectedFeeId(null);

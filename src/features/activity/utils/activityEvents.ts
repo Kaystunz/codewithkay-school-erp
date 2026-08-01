@@ -29,6 +29,12 @@ type AttendanceActivityData = {
   excusedCount: number;
 };
 
+type FeeActivityData = {
+  studentId: number;
+  feeType: string;
+  amount: number;
+};
+
 export const activityEvents = {
   studentAdded(
     student: StudentActivityData
@@ -189,4 +195,49 @@ export const activityEvents = {
     actor: "System",
   };
 },
+
+feeAdded(
+  fee: FeeActivityData
+): ActivityLogData {
+  return {
+    title: "Fee Added",
+    description: `${fee.feeType} fee was created for student #${fee.studentId}.`,
+    category: "Fees",
+    actor: "System",
+  };
+},
+
+feeUpdated(
+  fee: FeeActivityData
+): ActivityLogData {
+  return {
+    title: "Fee Updated",
+    description: `${fee.feeType} fee was updated for student #${fee.studentId}.`,
+    category: "Fees",
+    actor: "System",
+  };
+},
+
+paymentRecorded(
+  payment: FeeActivityData
+): ActivityLogData {
+  return {
+    title: "Payment Recorded",
+    description: `₦${payment.amount.toLocaleString()} payment was recorded for student #${payment.studentId}.`,
+    category: "Fees",
+    actor: "System",
+  };
+},
+
+feeDeleted(
+  fee: FeeActivityData
+): ActivityLogData {
+  return {
+    title: "Fee Deleted",
+    description: `${fee.feeType} fee was deleted for student #${fee.studentId}.`,
+    category: "Fees",
+    actor: "System",
+  };
+},
+
 };
