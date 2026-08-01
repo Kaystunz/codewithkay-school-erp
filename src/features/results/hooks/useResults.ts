@@ -5,6 +5,8 @@ import type {
   ResultRecord,
 } from "../types/result";
 import { calculateGrade } from "../utils/grading";
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+import { activityEvents } from "../../activity/utils/activityEvents";
 
 const emptyResultForm: ResultFormData = {
   studentId: 0,
@@ -28,6 +30,8 @@ type SubmitResult =
     };
 
 export function useResults() {
+  const { addActivity } = useActivityContext();
+
   const [results, setResults] =
     useState<ResultRecord[]>(initialResults);
 
@@ -153,13 +157,30 @@ export function useResults() {
   }
 
   function deleteResult(resultId: number) {
-    setResults((currentResults) =>
-      currentResults.filter(
-        (result) => result.id !== resultId
-      )
-    );
+  const resultToDelete = results.find(
+    (result) => result.id === resultId
+  );
+
+  if (!resultToDelete) {
+    return;
   }
 
+  setResults((currentResults) =>
+    currentResults.filter(
+      (result) => result.id !== resultId
+    )
+  );
+
+  addActivity(
+    activityEvents.resultDeleted({
+      studentId: resultToDelete.studentId,
+      subject: resultToDelete.subject,
+      totalScore: resultToDelete.totalScore,
+      grade: resultToDelete.grade,
+      status: resultToDelete.status,
+    })
+  );
+}
   function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
   ): SubmitResult {
@@ -267,34 +288,54 @@ export function useResults() {
       term: trimmedTerm,
     };
 
-    if (isEditing) {
-      setResults((currentResults) =>
-        currentResults.map((result) =>
-          result.id === editingResultId
-            ? {
-                ...result,
-                ...cleanedFormData,
-                totalScore,
-                grade,
-                remark,
-              }
-            : result
-        )
-      );
-    } else {
-      const newResult: ResultRecord = {
-        id: Date.now(),
-        ...cleanedFormData,
-        totalScore,
-        grade,
-        remark,
-      };
+    if (isEditing && editingResultId !== null) {
+  setResults((currentResults) =>
+    currentResults.map((result) =>
+      result.id === editingResultId
+        ? {
+            ...result,
+            ...cleanedFormData,
+            totalScore,
+            grade,
+            remark,
+          }
+        : result
+    )
+  );
 
-      setResults((currentResults) => [
-        newResult,
-        ...currentResults,
-      ]);
-    }
+  addActivity(
+    activityEvents.resultUpdated({
+      studentId: cleanedFormData.studentId,
+      subject: cleanedFormData.subject,
+      totalScore,
+      grade,
+      status: cleanedFormData.status,
+    })
+  );
+} else {
+  const newResult: ResultRecord = {
+    id: Date.now(),
+    ...cleanedFormData,
+    totalScore,
+    grade,
+    remark,
+  };
+
+  setResults((currentResults) => [
+    newResult,
+    ...currentResults,
+  ]);
+
+  addActivity(
+    activityEvents.resultAdded({
+      studentId: newResult.studentId,
+      subject: newResult.subject,
+      totalScore: newResult.totalScore,
+      grade: newResult.grade,
+      status: newResult.status,
+    })
+  );
+}
 
     const action = isEditing
       ? "updated"

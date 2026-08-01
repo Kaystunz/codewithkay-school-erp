@@ -35,6 +35,14 @@ type FeeActivityData = {
   amount: number;
 };
 
+type ResultActivityData = {
+  studentId: number;
+  subject: string;
+  totalScore: number;
+  grade: string;
+  status: "Draft" | "Published";
+};
+
 export const activityEvents = {
   studentAdded(
     student: StudentActivityData
@@ -236,6 +244,45 @@ feeDeleted(
     title: "Fee Deleted",
     description: `${fee.feeType} fee was deleted for student #${fee.studentId}.`,
     category: "Fees",
+    actor: "System",
+  };
+},
+
+resultAdded(
+  result: ResultActivityData
+): ActivityLogData {
+  return {
+    title:
+      result.status === "Published"
+        ? "Result Published"
+        : "Result Added",
+    description: `${result.subject} result was added for student #${result.studentId} with a score of ${result.totalScore}% and grade ${result.grade}.`,
+    category: "Result",
+    actor: "System",
+  };
+},
+
+resultUpdated(
+  result: ResultActivityData
+): ActivityLogData {
+  return {
+    title:
+      result.status === "Published"
+        ? "Published Result Updated"
+        : "Result Updated",
+    description: `${result.subject} result for student #${result.studentId} was updated to ${result.totalScore}% with grade ${result.grade}.`,
+    category: "Result",
+    actor: "System",
+  };
+},
+
+resultDeleted(
+  result: ResultActivityData
+): ActivityLogData {
+  return {
+    title: "Result Deleted",
+    description: `${result.subject} result for student #${result.studentId} was deleted.`,
+    category: "Result",
     actor: "System",
   };
 },
