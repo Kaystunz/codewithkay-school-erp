@@ -1,4 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import {
   Bell,
   ChevronDown,
@@ -8,24 +13,44 @@ import {
   Settings,
   User,
 } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "../../features/auth/hooks/useAuthContext";
+import { useNotificationsContext } from "../../features/notifications/hooks/useNotificationsContext";
+
+import NotificationPanel from "../../features/notifications/components/NotificationPanel";
 
 type TopbarProps = {
   onMenuClick: () => void;
 };
 
-function Topbar({ onMenuClick }: TopbarProps) {
-  const [isProfileOpen, setIsProfileOpen] =
-    useState(false);
+function Topbar({
+  onMenuClick,
+}: TopbarProps) {
+  const [
+    isNotificationsOpen,
+    setIsNotificationsOpen,
+  ] = useState(false);
+
+  const [
+    isProfileOpen,
+    setIsProfileOpen,
+  ] = useState(false);
+
+  const notificationsRef =
+    useRef<HTMLDivElement | null>(null);
 
   const profileRef =
     useRef<HTMLDivElement | null>(null);
 
   const navigate = useNavigate();
 
-  const { user, logout } = useAuthContext();
+  const { user, logout } =
+    useAuthContext();
+
+  const { unreadCount } =
+    useNotificationsContext();
 
   useEffect(() => {
     function handleOutsideClick(
@@ -38,6 +63,15 @@ function Topbar({ onMenuClick }: TopbarProps) {
         )
       ) {
         setIsProfileOpen(false);
+      }
+
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(
+          event.target as Node
+        )
+      ) {
+        setIsNotificationsOpen(false);
       }
     }
 
@@ -56,6 +90,7 @@ function Topbar({ onMenuClick }: TopbarProps) {
 
   function handleLogout() {
     logout();
+
     navigate("/login", {
       replace: true,
     });
@@ -113,15 +148,46 @@ function Topbar({ onMenuClick }: TopbarProps) {
           />
         </div>
 
-        <button
-          type="button"
-          className="relative rounded-xl border border-slate-200 p-2.5 text-slate-600 hover:bg-slate-100"
-          aria-label="Notifications"
+        <div
+          ref={notificationsRef}
+          className="relative"
         >
-          <Bell size={20} />
+          <button
+            type="button"
+            onClick={() => {
+              setIsProfileOpen(false);
 
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
-        </button>
+              setIsNotificationsOpen(
+                (current) => !current
+              );
+            }}
+            className="relative rounded-xl border border-slate-200 p-2.5 text-slate-600 hover:bg-slate-100"
+            aria-label="Notifications"
+            aria-expanded={
+              isNotificationsOpen
+            }
+          >
+            <Bell size={20} />
+
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+                {unreadCount > 99
+                  ? "99+"
+                  : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {isNotificationsOpen && (
+            <NotificationPanel
+              onClose={() =>
+                setIsNotificationsOpen(
+                  false
+                )
+              }
+            />
+          )}
+        </div>
 
         <div
           ref={profileRef}
@@ -129,11 +195,13 @@ function Topbar({ onMenuClick }: TopbarProps) {
         >
           <button
             type="button"
-            onClick={() =>
+            onClick={() => {
+              setIsNotificationsOpen(false);
+
               setIsProfileOpen(
                 (current) => !current
-              )
-            }
+              );
+            }}
             className="flex items-center gap-3 rounded-xl border border-slate-200 p-1.5 pr-3 hover:bg-slate-50"
             aria-expanded={isProfileOpen}
             aria-haspopup="menu"
@@ -185,6 +253,10 @@ function Topbar({ onMenuClick }: TopbarProps) {
                 <button
                   type="button"
                   role="menuitem"
+                  onClick={() => {
+                    setIsProfileOpen(false);
+                    navigate("/profile");
+                  }}
                   className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-slate-50"
                 >
                   <User size={18} />

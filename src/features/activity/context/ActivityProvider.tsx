@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 
 import { ActivityContext } from "./ActivityContext";
-
 import { useActivity } from "../hooks/useActivity";
+import { useNotificationsContext } from "../../notifications/hooks/useNotificationsContext";
 
 type Props = {
   children: ReactNode;
@@ -11,7 +11,12 @@ type Props = {
 export function ActivityProvider({
   children,
 }: Props) {
-  const value = useActivity();
+  const { addNotification } =
+    useNotificationsContext();
+
+  const value = useActivity(
+    addNotification
+  );
 
   return (
     <ActivityContext.Provider value={value}>
