@@ -92,6 +92,12 @@ function AnnouncementsPage() {
 function handleArchive(
   announcement: Announcement
 ) {
+  console.log(
+    "Archive clicked:",
+    announcement.id,
+    announcement.title
+  );
+
   archiveAnnouncement(announcement.id);
 
   showToast({
@@ -102,8 +108,17 @@ function handleArchive(
 
 function handleDelete() {
   if (!announcementToDelete) {
+    console.log(
+      "No announcement selected for deletion"
+    );
     return;
   }
+
+  console.log(
+    "Deleting:",
+    announcementToDelete.id,
+    announcementToDelete.title
+  );
 
   deleteAnnouncement(
     announcementToDelete.id

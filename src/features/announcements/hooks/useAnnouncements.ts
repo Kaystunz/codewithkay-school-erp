@@ -6,6 +6,8 @@ import type {
   Announcement,
   AnnouncementFormData,
 } from "../types/announcement";
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+import { activityEvents } from "../../activity/utils/activityEvents";
 
 const emptyAnnouncementForm: AnnouncementFormData = {
   title: "",
@@ -29,6 +31,8 @@ type SubmitResult =
     };
 
 export function useAnnouncements() {
+    const { addActivity } = useActivityContext();
+
   const [announcements, setAnnouncements] =
     useState<Announcement[]>(initialAnnouncements);
 
@@ -167,59 +171,112 @@ export function useAnnouncements() {
   }
 
   function deleteAnnouncement(
-    announcementId: number
-  ) {
-    setAnnouncements(
-      (currentAnnouncements) =>
-        currentAnnouncements.filter(
-          (announcement) =>
-            announcement.id !==
-            announcementId
-        )
+  announcementId: number
+) {
+  const announcementToDelete =
+    announcements.find(
+      (announcement) =>
+        announcement.id === announcementId
     );
+
+  if (!announcementToDelete) {
+    return;
   }
+
+  setAnnouncements(
+    (currentAnnouncements) =>
+      currentAnnouncements.filter(
+        (announcement) =>
+          announcement.id !== announcementId
+      )
+  );
+
+  addActivity(
+    activityEvents.announcementDeleted({
+      title: announcementToDelete.title,
+      audience: announcementToDelete.audience,
+      priority: announcementToDelete.priority,
+      status: announcementToDelete.status,
+    })
+  );
+}
 
   function publishAnnouncement(
-    announcementId: number
-  ) {
-    setAnnouncements(
-      (currentAnnouncements) =>
-        currentAnnouncements.map(
-          (announcement) =>
-            announcement.id ===
-            announcementId
-              ? {
-                  ...announcement,
-                  status: "Published",
-                  publishedDate:
-                    announcement
-                      .publishedDate ||
-                    new Date()
-                      .toISOString()
-                      .split("T")[0],
-                }
-              : announcement
-        )
+  announcementId: number
+) {
+  const announcementToPublish =
+    announcements.find(
+      (announcement) =>
+        announcement.id === announcementId
     );
+
+  if (!announcementToPublish) {
+    return;
   }
 
+  setAnnouncements(
+    (currentAnnouncements) =>
+      currentAnnouncements.map(
+        (announcement) =>
+          announcement.id === announcementId
+            ? {
+                ...announcement,
+                status: "Published",
+                publishedDate:
+                  announcement.publishedDate ||
+                  new Date()
+                    .toISOString()
+                    .split("T")[0],
+              }
+            : announcement
+      )
+  );
+
+  addActivity(
+    activityEvents.announcementPublished({
+      title: announcementToPublish.title,
+      audience: announcementToPublish.audience,
+      priority: announcementToPublish.priority,
+      status: "Published",
+    })
+  );
+}
+
   function archiveAnnouncement(
-    announcementId: number
-  ) {
-    setAnnouncements(
-      (currentAnnouncements) =>
-        currentAnnouncements.map(
-          (announcement) =>
-            announcement.id ===
-            announcementId
-              ? {
-                  ...announcement,
-                  status: "Archived",
-                }
-              : announcement
-        )
+  announcementId: number
+) {
+  const announcementToArchive =
+    announcements.find(
+      (announcement) =>
+        announcement.id === announcementId
     );
+
+  if (!announcementToArchive) {
+    return;
   }
+
+  setAnnouncements(
+    (currentAnnouncements) =>
+      currentAnnouncements.map(
+        (announcement) =>
+          announcement.id === announcementId
+            ? {
+                ...announcement,
+                status: "Archived",
+              }
+            : announcement
+      )
+  );
+
+  addActivity(
+    activityEvents.announcementArchived({
+      title: announcementToArchive.title,
+      audience: announcementToArchive.audience,
+      priority: announcementToArchive.priority,
+      status: "Archived",
+    })
+  );
+}
 
   function handleSubmit(
     event: React.FormEvent<HTMLFormElement>
@@ -289,37 +346,57 @@ export function useAnnouncements() {
             : formData.publishedDate,
       };
 
-    if (isEditing) {
-      setAnnouncements(
-        (currentAnnouncements) =>
-          currentAnnouncements.map(
-            (announcement) =>
-              announcement.id ===
-              editingAnnouncementId
-                ? {
-                    ...announcement,
-                    ...cleanedFormData,
-                  }
-                : announcement
-          )
-      );
-    } else {
-      const newAnnouncement: Announcement =
-        {
-          id: Date.now(),
-          ...cleanedFormData,
-          createdAt: new Date()
-            .toISOString()
-            .split("T")[0],
-        };
+   if (
+  isEditing &&
+  editingAnnouncementId !== null
+) {
+  setAnnouncements(
+    (currentAnnouncements) =>
+      currentAnnouncements.map(
+        (announcement) =>
+          announcement.id ===
+          editingAnnouncementId
+            ? {
+                ...announcement,
+                ...cleanedFormData,
+              }
+            : announcement
+      )
+  );
 
-      setAnnouncements(
-        (currentAnnouncements) => [
-          newAnnouncement,
-          ...currentAnnouncements,
-        ]
-      );
-    }
+  addActivity(
+    activityEvents.announcementUpdated({
+      title: cleanedFormData.title,
+      audience: cleanedFormData.audience,
+      priority: cleanedFormData.priority,
+      status: cleanedFormData.status,
+    })
+  );
+} else {
+  const newAnnouncement: Announcement = {
+    id: Date.now(),
+    ...cleanedFormData,
+    createdAt: new Date()
+      .toISOString()
+      .split("T")[0],
+  };
+
+  setAnnouncements(
+    (currentAnnouncements) => [
+      newAnnouncement,
+      ...currentAnnouncements,
+    ]
+  );
+
+  addActivity(
+    activityEvents.announcementAdded({
+      title: newAnnouncement.title,
+      audience: newAnnouncement.audience,
+      priority: newAnnouncement.priority,
+      status: newAnnouncement.status,
+    })
+  );
+}
 
     const action = isEditing
       ? "updated"

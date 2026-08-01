@@ -120,9 +120,7 @@ function AnnouncementTable({
                       <button
                         type="button"
                         onClick={() =>
-                          publishAnnouncement(
-                            announcement.id
-                          )
+                          onPublish(announcement)
                         }
                         className="rounded-lg p-2 text-slate-500 hover:bg-emerald-50 hover:text-emerald-700"
                         title="Publish announcement"
@@ -136,9 +134,7 @@ function AnnouncementTable({
                       <button
                         type="button"
                         onClick={() =>
-                          archiveAnnouncement(
-                            announcement.id
-                          )
+                          onArchive(announcement)
                         }
                         className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
                         title="Archive announcement"
@@ -161,9 +157,7 @@ function AnnouncementTable({
                     <button
                       type="button"
                       onClick={() =>
-                        deleteAnnouncement(
-                          announcement.id
-                        )
+                        onDelete(announcement)
                       }
                       className="rounded-lg p-2 text-slate-500 hover:bg-red-50 hover:text-red-600"
                       title="Delete announcement"

@@ -43,6 +43,13 @@ type ResultActivityData = {
   status: "Draft" | "Published";
 };
 
+type AnnouncementActivityData = {
+  title: string;
+  audience: string;
+  priority: string;
+  status: string;
+};
+
 export const activityEvents = {
   studentAdded(
     student: StudentActivityData
@@ -283,6 +290,64 @@ resultDeleted(
     title: "Result Deleted",
     description: `${result.subject} result for student #${result.studentId} was deleted.`,
     category: "Result",
+    actor: "System",
+  };
+},
+
+announcementAdded(
+  announcement: AnnouncementActivityData
+): ActivityLogData {
+  return {
+    title:
+      announcement.status === "Published"
+        ? "Announcement Published"
+        : "Announcement Added",
+    description: `"${announcement.title}" was created for ${announcement.audience.toLowerCase()}.`,
+    category: "Announcement",
+    actor: "System",
+  };
+},
+
+announcementUpdated(
+  announcement: AnnouncementActivityData
+): ActivityLogData {
+  return {
+    title: "Announcement Updated",
+    description: `"${announcement.title}" was updated.`,
+    category: "Announcement",
+    actor: "System",
+  };
+},
+
+announcementPublished(
+  announcement: AnnouncementActivityData
+): ActivityLogData {
+  return {
+    title: "Announcement Published",
+    description: `"${announcement.title}" was published for ${announcement.audience.toLowerCase()}.`,
+    category: "Announcement",
+    actor: "System",
+  };
+},
+
+announcementArchived(
+  announcement: AnnouncementActivityData
+): ActivityLogData {
+  return {
+    title: "Announcement Archived",
+    description: `"${announcement.title}" was archived.`,
+    category: "Announcement",
+    actor: "System",
+  };
+},
+
+announcementDeleted(
+  announcement: AnnouncementActivityData
+): ActivityLogData {
+  return {
+    title: "Announcement Deleted",
+    description: `"${announcement.title}" was deleted.`,
+    category: "Announcement",
     actor: "System",
   };
 },
