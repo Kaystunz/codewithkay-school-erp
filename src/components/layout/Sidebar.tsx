@@ -3,6 +3,7 @@ import {
   BookOpen,
   CalendarCheck,
   CalendarDays,
+  CalendarRange,
   ClipboardList,
   CreditCard,
   GraduationCap,
@@ -104,6 +105,12 @@ const navigationItems = [
     icon: Megaphone,
     permission: "announcements",
   },
+  {
+  label: "Events",
+  path: "/events",
+  icon: CalendarRange,
+  permission: "events",
+},
   {
     label: "Reports",
     path: "/reports",

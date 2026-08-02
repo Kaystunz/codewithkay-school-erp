@@ -50,6 +50,13 @@ type AnnouncementActivityData = {
   status: string;
 };
 
+type EventActivityData = {
+  title: string;
+  eventType: string;
+  startDate: string;
+  status: string;
+};
+
 export const activityEvents = {
   studentAdded(
     student: StudentActivityData

@@ -52,7 +52,8 @@ import AnnouncementsProvider from "./features/announcements/context/Announcement
 
 import ReportsPage from "./features/reports/pages/ReportsPage";
 import { RoleGuard } from "./features/auth/components/RoleGuard";
-
+import EventsProvider from "./features/events/context/EventsProvider";
+import EventsPage from "./features/events/pages/EventsPage";
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
                   <TimetableProvider>
                     <AssignmentsProvider>
                       <AnnouncementsProvider>
+                        <EventsProvider>
                         <BrowserRouter>
   <Routes>
     <Route path="/login" element={<LoginPage />} />
@@ -96,10 +98,6 @@ function App() {
           />
         </Route>
 
-        <Route element={<RoleGuard permission="accounts" />}>
-        <Route path="/accounts" element={<AccountsPage />} />
-      </Route>
-
         <Route element={<RoleGuard permission="parents" />}>
           <Route path="/parents" element={<ParentsPage />} />
           <Route
@@ -107,10 +105,6 @@ function App() {
             element={<ParentDetailsPage />}
           />
         </Route>
-
-        <Route element={<RoleGuard permission="accounts" />}>
-        <Route path="/accounts" element={<AccountsPage />} />
-      </Route>
 
         <Route element={<RoleGuard permission="accounts" />}>
         <Route
@@ -158,6 +152,13 @@ function App() {
           />
         </Route>
 
+        <Route element={<RoleGuard permission="events" />}>
+        <Route
+          path="/events"
+          element={<EventsPage />}
+        />
+      </Route>
+
         <Route element={<RoleGuard permission="reports" />}>
           <Route path="/reports" element={<ReportsPage />} />
         </Route>
@@ -170,6 +171,7 @@ function App() {
     </Route>
   </Routes>
 </BrowserRouter>
+</EventsProvider>
                       </AnnouncementsProvider>
                     </AssignmentsProvider>
                   </TimetableProvider>

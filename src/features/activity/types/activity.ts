@@ -6,18 +6,14 @@ export type ActivityCategory =
   | "Fees"
   | "Account"
   | "Result"
-  | "Announcement";
+  | "Announcement"
+  | "Event";
 
 export type Activity = {
   id: number;
-
   title: string;
-
   description: string;
-
   actor: string;
-
   category: ActivityCategory;
-
   createdAt: string;
 };

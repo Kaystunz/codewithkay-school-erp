@@ -17,6 +17,7 @@ export const permissions: Record<
     "timetable",
     "assignments",
     "announcements",
+     "events",
     "reports",
     "settings",
     ],
@@ -30,6 +31,7 @@ export const permissions: Record<
     "timetable",
     "assignments",
     "announcements",
+     "events",
   ],
 
   Parent: [
@@ -40,6 +42,7 @@ export const permissions: Record<
     "timetable",
     "assignments",
     "announcements",
+     "events",
   ],
 
   Student: [
@@ -49,5 +52,6 @@ export const permissions: Record<
     "timetable",
     "assignments",
     "announcements",
+     "events",
   ],
 };

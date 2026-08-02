@@ -101,6 +101,12 @@ function shouldCreateNotification(
         activity.title === "Announcement Added"
       );
 
+      case "Event":
+        return (
+            activity.title === "Event Created" ||
+            activity.title === "Event Updated"
+        );
+
     default:
       return false;
   }
