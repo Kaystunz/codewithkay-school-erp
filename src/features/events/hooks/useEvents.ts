@@ -165,6 +165,15 @@ export function useEvents() {
           ).getTime()
       );
   }, [events]);
+  const completedEvents =
+  events.filter(
+    (event) => event.status === "Completed"
+  ).length;
+
+const cancelledEvents =
+  events.filter(
+    (event) => event.status === "Cancelled"
+  ).length;
 
   function openAddModal() {
     setEditingEventId(null);
@@ -225,6 +234,66 @@ export function useEvents() {
         })
         );
   }
+
+  function completeEvent(eventId: number) {
+  const eventToComplete = events.find(
+    (event) => event.id === eventId
+  );
+
+  if (!eventToComplete) {
+    return;
+  }
+
+  setEvents((currentEvents) =>
+    currentEvents.map((event) =>
+      event.id === eventId
+        ? {
+            ...event,
+            status: "Completed",
+          }
+        : event
+    )
+  );
+
+  addActivity(
+    createActivityLog({
+      title: "Event Completed",
+      description: `"${eventToComplete.title}" was marked as completed.`,
+      category: "Event",
+      actor: "System",
+    })
+  );
+}
+
+function cancelEvent(eventId: number) {
+  const eventToCancel = events.find(
+    (event) => event.id === eventId
+  );
+
+  if (!eventToCancel) {
+    return;
+  }
+
+  setEvents((currentEvents) =>
+    currentEvents.map((event) =>
+      event.id === eventId
+        ? {
+            ...event,
+            status: "Cancelled",
+          }
+        : event
+    )
+  );
+
+  addActivity(
+    createActivityLog({
+      title: "Event Cancelled",
+      description: `"${eventToCancel.title}" was cancelled.`,
+      category: "Event",
+      actor: "System",
+    })
+  );
+}
 
   function handleSubmit(): SubmitResult {
     const title =
@@ -370,30 +439,34 @@ export function useEvents() {
     };
   }
 
-  return {
-    events,
-    filteredEvents,
-    upcomingEvents,
+ return {
+  events,
+  filteredEvents,
+  upcomingEvents,
+  completedEvents,
+  cancelledEvents,
 
-    searchTerm,
-    setSearchTerm,
+  searchTerm,
+  setSearchTerm,
 
-    typeFilter,
-    setTypeFilter,
+  typeFilter,
+  setTypeFilter,
 
-    statusFilter,
-    setStatusFilter,
+  statusFilter,
+  setStatusFilter,
 
-    isModalOpen,
-    isEditing,
+  isModalOpen,
+  isEditing,
 
-    formData,
-    setFormData,
+  formData,
+  setFormData,
 
-    openAddModal,
-    closeModal,
-    startEditing,
-    deleteEvent,
-    handleSubmit,
-  };
+  openAddModal,
+  closeModal,
+  startEditing,
+  deleteEvent,
+  completeEvent,
+  cancelEvent,
+  handleSubmit,
+};
 }

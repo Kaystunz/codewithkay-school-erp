@@ -56,6 +56,9 @@ function getNotificationLink(
     case "Announcement":
       return "/announcements";
 
+    case "Event":
+     return "/events";
+
     default:
       return "/dashboard";
   }
@@ -101,11 +104,12 @@ function shouldCreateNotification(
         activity.title === "Announcement Added"
       );
 
-      case "Event":
-        return (
-            activity.title === "Event Created" ||
-            activity.title === "Event Updated"
-        );
+     case "Event":
+      return (
+        activity.title === "Event Created" ||
+        activity.title === "Event Completed" ||
+        activity.title === "Event Cancelled"
+      );
 
     default:
       return false;

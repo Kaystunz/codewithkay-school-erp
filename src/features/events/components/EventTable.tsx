@@ -1,5 +1,7 @@
 import {
+  CalendarCheck,
   CalendarRange,
+  CalendarX2,
   MapPin,
   Pencil,
   Trash2,
@@ -12,12 +14,16 @@ type EventTableProps = {
   events: SchoolEvent[];
   onEdit: (event: SchoolEvent) => void;
   onDelete: (event: SchoolEvent) => void;
+  onComplete: (event: SchoolEvent) => void;
+  onCancel: (event: SchoolEvent) => void;
 };
 
 function EventTable({
   events,
   onEdit,
   onDelete,
+  onComplete,
+  onCancel,
 }: EventTableProps) {
   const { classes } = useClassesContext();
 
@@ -33,16 +39,72 @@ function EventTable({
     }).format(new Date(`${date}T00:00:00`));
   }
 
+  function formatTime(time: string) {
+    if (!time) {
+      return "Time not specified";
+    }
+
+    return new Intl.DateTimeFormat("en-NG", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(
+      new Date(`2000-01-01T${time}:00`)
+    );
+  }
+
+  function getEventTypeStyle(
+    eventType: SchoolEvent["eventType"]
+  ) {
+    switch (eventType) {
+      case "Academic":
+        return "bg-blue-100 text-blue-700";
+
+      case "Meeting":
+        return "bg-purple-100 text-purple-700";
+
+      case "Holiday":
+        return "bg-orange-100 text-orange-700";
+
+      case "Examination":
+        return "bg-red-100 text-red-700";
+
+      case "Sports":
+        return "bg-emerald-100 text-emerald-700";
+
+      case "Celebration":
+        return "bg-pink-100 text-pink-700";
+
+      default:
+        return "bg-slate-100 text-slate-700";
+    }
+  }
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full">
         <thead className="bg-slate-50">
           <tr className="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-            <th className="px-5 py-4">Event</th>
-            <th className="px-5 py-4">Audience</th>
-            <th className="px-5 py-4">Date and time</th>
-            <th className="px-5 py-4">Location</th>
-            <th className="px-5 py-4">Status</th>
+            <th className="px-5 py-4">
+              Event
+            </th>
+
+            <th className="px-5 py-4">
+              Audience
+            </th>
+
+            <th className="px-5 py-4">
+              Date and time
+            </th>
+
+            <th className="px-5 py-4">
+              Location
+            </th>
+
+            <th className="px-5 py-4">
+              Status
+            </th>
+
             <th className="px-5 py-4 text-right">
               Actions
             </th>
@@ -76,11 +138,13 @@ function EventTable({
                     {event.title}
                   </p>
 
-                  <div className="mt-2 flex items-center gap-2">
-                    <span className="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-700">
-                      {event.eventType}
-                    </span>
-                  </div>
+                  <span
+                    className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${getEventTypeStyle(
+                      event.eventType
+                    )}`}
+                  >
+                    {event.eventType}
+                  </span>
 
                   {event.description && (
                     <p className="mt-2 max-w-sm truncate text-sm text-slate-500">
@@ -99,7 +163,7 @@ function EventTable({
                   </p>
 
                   <p className="mt-1 text-xs text-slate-500">
-                    {event.startTime || "Time not specified"}
+                    {formatTime(event.startTime)}
                   </p>
                 </td>
 
@@ -133,6 +197,32 @@ function EventTable({
 
                 <td className="px-5 py-4">
                   <div className="flex justify-end gap-2">
+                    {event.status === "Scheduled" && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onComplete(event)
+                          }
+                          className="rounded-lg p-2 text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-700"
+                          title="Mark event as completed"
+                        >
+                          <CalendarCheck size={18} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onCancel(event)
+                          }
+                          className="rounded-lg p-2 text-slate-500 transition hover:bg-amber-50 hover:text-amber-700"
+                          title="Cancel event"
+                        >
+                          <CalendarX2 size={18} />
+                        </button>
+                      </>
+                    )}
+
                     <button
                       type="button"
                       onClick={() => onEdit(event)}
@@ -144,7 +234,9 @@ function EventTable({
 
                     <button
                       type="button"
-                      onClick={() => onDelete(event)}
+                      onClick={() =>
+                        onDelete(event)
+                      }
                       className="rounded-lg p-2 text-slate-500 transition hover:bg-red-50 hover:text-red-600"
                       title="Delete event"
                     >

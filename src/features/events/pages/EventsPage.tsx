@@ -1,15 +1,24 @@
-import { Plus } from "lucide-react";
 
 import { useEventsContext } from "../hooks/useEventsContext";
 
 import AddEventModal from "../components/AddEventModal";
 import { useToast } from "../../../components/ui/toast/useToast";
 import { useState } from "react";
+import {
+  CalendarDays,
+  List,
+  Plus,
+} from "lucide-react";
+
+import EventCalendar from "../components/EventCalendar";
 
 import EventTable from "../components/EventTable";
 import ConfirmDialog from "../../../components/ui/ConfirmDialog";
 
 import type { SchoolEvent } from "../types/event";
+import EventStats from "../components/EventStats";
+
+import EventFilters from "../components/EventFilters";
 
 function EventsPage() {
     const { showToast } = useToast();
@@ -18,10 +27,28 @@ function EventsPage() {
   setEventToDelete,
 ] = useState<SchoolEvent | null>(null);
 
+const [viewMode, setViewMode] =
+  useState<"table" | "calendar">(
+    "table"
+  );
+
  const {
   events,
   filteredEvents,
   upcomingEvents,
+
+
+  completedEvents,
+  cancelledEvents,
+
+  searchTerm,
+  setSearchTerm,
+
+  typeFilter,
+  setTypeFilter,
+
+  statusFilter,
+  setStatusFilter,
 
   isModalOpen,
   isEditing,
@@ -33,6 +60,8 @@ function EventsPage() {
   closeModal,
   startEditing,
   deleteEvent,
+  completeEvent,
+  cancelEvent,
   handleSubmit,
 } = useEventsContext();
 
@@ -58,6 +87,28 @@ function EventsPage() {
       result.action === "updated"
         ? "Event updated successfully."
         : "Event created successfully.",
+  });
+}
+
+function handleComplete(
+  event: SchoolEvent
+) {
+  completeEvent(event.id);
+
+  showToast({
+    type: "success",
+    message: `"${event.title}" marked as completed.`,
+  });
+}
+
+function handleCancel(
+  event: SchoolEvent
+) {
+  cancelEvent(event.id);
+
+  showToast({
+    type: "success",
+    message: `"${event.title}" has been cancelled.`,
   });
 }
 
@@ -100,35 +151,75 @@ function handleDelete() {
         </button>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">
-            Total events
-          </p>
-
-          <p className="mt-2 text-3xl font-bold text-slate-900">
-            {events.length}
-          </p>
-        </article>
-
-        <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <p className="text-sm font-medium text-slate-500">
-            Upcoming events
-          </p>
-
-          <p className="mt-2 text-3xl font-bold text-teal-700">
-            {upcomingEvents.length}
-          </p>
-        </article>
-      </section>
-      
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <EventTable
-            events={filteredEvents}
-            onEdit={startEditing}
-            onDelete={setEventToDelete}
+     <EventStats
+        totalEvents={events.length}
+        upcomingEvents={upcomingEvents.length}
+        completedEvents={completedEvents}
+        cancelledEvents={cancelledEvents}
         />
-        </section>
+      <div className="flex justify-end">
+  <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+    <button
+      type="button"
+      onClick={() =>
+        setViewMode("table")
+      }
+      className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+        viewMode === "table"
+          ? "bg-teal-700 text-white"
+          : "text-slate-600 hover:bg-slate-50"
+      }`}
+    >
+      <List size={17} />
+      Table
+    </button>
+
+    <button
+      type="button"
+      onClick={() =>
+        setViewMode("calendar")
+      }
+      className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition ${
+        viewMode === "calendar"
+          ? "bg-teal-700 text-white"
+          : "text-slate-600 hover:bg-slate-50"
+      }`}
+    >
+      <CalendarDays size={17} />
+      Calendar
+    </button>
+  </div>
+</div>
+        
+     {viewMode === "table" ? (
+  <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <EventFilters
+      searchTerm={searchTerm}
+      typeFilter={typeFilter}
+      statusFilter={statusFilter}
+      onSearchChange={setSearchTerm}
+      onTypeFilterChange={setTypeFilter}
+      onStatusFilterChange={
+        setStatusFilter
+      }
+    />
+
+    <EventTable
+      events={filteredEvents}
+      onEdit={startEditing}
+      onDelete={setEventToDelete}
+      onComplete={
+        handleComplete
+      }
+      onCancel={handleCancel}
+    />
+  </section>
+) : (
+  <EventCalendar
+    events={filteredEvents}
+    onEventClick={startEditing}
+  />
+)}
 
       <AddEventModal
         isOpen={isModalOpen}

@@ -4,6 +4,7 @@ type EventFiltersProps = {
   searchTerm: string;
   typeFilter: string;
   statusFilter: string;
+
   onSearchChange: (value: string) => void;
   onTypeFilterChange: (value: string) => void;
   onStatusFilterChange: (value: string) => void;
@@ -41,7 +42,7 @@ function EventFilters({
         onChange={(event) =>
           onTypeFilterChange(event.target.value)
         }
-        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
+        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
       >
         <option value="All types">
           All event types
@@ -74,7 +75,7 @@ function EventFilters({
         onChange={(event) =>
           onStatusFilterChange(event.target.value)
         }
-        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
+        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
       >
         <option value="All statuses">
           All statuses
