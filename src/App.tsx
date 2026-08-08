@@ -55,6 +55,9 @@ import { RoleGuard } from "./features/auth/components/RoleGuard";
 import EventsProvider from "./features/events/context/EventsProvider";
 import EventsPage from "./features/events/pages/EventsPage";
 
+import MessagesProvider from "./features/messages/context/MessagesProvider";
+import MessagesPage from "./features/messages/pages/MessagesPage";
+
 function App() {
   return (
     <StudentsProvider>
@@ -68,6 +71,7 @@ function App() {
                     <AssignmentsProvider>
                       <AnnouncementsProvider>
                         <EventsProvider>
+                          <MessagesProvider>
                         <BrowserRouter>
   <Routes>
     <Route path="/login" element={<LoginPage />} />
@@ -163,6 +167,13 @@ function App() {
           <Route path="/reports" element={<ReportsPage />} />
         </Route>
 
+        <Route element={<RoleGuard permission="messages" />}>
+        <Route
+          path="/messages"
+          element={<MessagesPage />}
+        />
+      </Route>
+
         <Route
           path="*"
           element={<Navigate to="/dashboard" replace />}
@@ -171,6 +182,7 @@ function App() {
     </Route>
   </Routes>
 </BrowserRouter>
+</MessagesProvider>
 </EventsProvider>
                       </AnnouncementsProvider>
                     </AssignmentsProvider>

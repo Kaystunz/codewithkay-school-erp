@@ -15,7 +15,9 @@ import {
   UserRound,
   Users,
   X,
+  MessageSquare,
 } from "lucide-react";
+
 import { NavLink, useNavigate } from "react-router-dom";
 import { usePermissions } from "../../features/auth/hooks/usePermissions";
 import { useAuthContext } from "../../features/auth/hooks/useAuthContext";
@@ -99,6 +101,12 @@ const navigationItems = [
     icon: ClipboardList,
     permission: "assignments",
   },
+  {
+  label: "Messages",
+  path: "/messages",
+  icon: MessageSquare,
+  permission: "messages",
+},
   {
     label: "Announcements",
     path: "/announcements",

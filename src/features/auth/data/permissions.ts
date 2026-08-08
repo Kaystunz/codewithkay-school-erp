@@ -20,6 +20,7 @@ export const permissions: Record<
      "events",
     "reports",
     "settings",
+    "messages",
     ],
 
   Teacher: [
@@ -32,6 +33,7 @@ export const permissions: Record<
     "assignments",
     "announcements",
      "events",
+     "messages",
   ],
 
   Parent: [
@@ -43,6 +45,7 @@ export const permissions: Record<
     "assignments",
     "announcements",
      "events",
+     "messages",
   ],
 
   Student: [
@@ -53,5 +56,6 @@ export const permissions: Record<
     "assignments",
     "announcements",
      "events",
+     "messages",
   ],
 };
