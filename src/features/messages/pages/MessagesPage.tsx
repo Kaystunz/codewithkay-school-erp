@@ -1,4 +1,9 @@
-import { useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import {
   Inbox,
@@ -59,6 +64,9 @@ const [
   setConversationToDelete,
 ] = useState<string | null>(null);
 
+const messagesEndRef =
+  useRef<HTMLDivElement | null>(null);
+
   function handleDeleteConversation() {
   if (!conversationToDelete) {
     return;
@@ -107,6 +115,30 @@ const [
 
     return `${account.name} — ${account.role}`;
   }
+
+  function getConversationPartner(
+  conversationMessages: Message[]
+) {
+  const partnerMessage =
+    conversationMessages.find(
+      (message) =>
+        message.senderId !== currentUserId ||
+        message.receiverId !== currentUserId
+    );
+
+  if (!partnerMessage) {
+    return null;
+  }
+
+  const partnerId =
+    partnerMessage.senderId === currentUserId
+      ? partnerMessage.receiverId
+      : partnerMessage.senderId;
+
+  return accounts.find(
+    (account) => account.id === partnerId
+  );
+}
 
   const availableRecipients =
     accounts.filter(
@@ -253,35 +285,46 @@ const [
       currentUserId,
     ]);
 
-  const selectedConversationMessages =
-    useMemo(() => {
-      if (
-        !selectedConversationId
-      ) {
-        return [];
+      const selectedConversationMessages =
+      useMemo(() => {
+        if (!selectedConversationId) {
+          return [];
+        }
+
+        return messages
+          .filter(
+            (message) =>
+              message.conversationId ===
+              selectedConversationId
+          )
+          .sort(
+            (
+              firstMessage,
+              secondMessage
+            ) =>
+              new Date(
+                firstMessage.createdAt
+              ).getTime() -
+              new Date(
+                secondMessage.createdAt
+              ).getTime()
+          );
+      }, [
+        messages,
+        selectedConversationId,
+      ]);
+
+    useEffect(() => {
+      if (!selectedConversationId) {
+        return;
       }
 
-      return messages
-        .filter(
-          (message) =>
-            message.conversationId ===
-            selectedConversationId
-        )
-        .sort(
-          (
-            firstMessage,
-            secondMessage
-          ) =>
-            new Date(
-              firstMessage.createdAt
-            ).getTime() -
-            new Date(
-              secondMessage.createdAt
-            ).getTime()
-        );
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+      });
     }, [
-      messages,
       selectedConversationId,
+      selectedConversationMessages.length,
     ]);
 
   const inboxUnreadCount =
@@ -562,6 +605,18 @@ const [
                 const message =
                   conversation.latestMessage;
 
+                  const partner =
+                  getConversationPartner(
+                    conversation.messages
+                  );
+
+                const unreadMessages =
+                  conversation.messages.filter(
+                    (item) =>
+                      item.receiverId === currentUserId &&
+                      item.status === "Sent"
+                  ).length;
+
                 return (
                   <div
                     key={
@@ -576,65 +631,72 @@ const [
                     }`}
                   >
                     <button
-                      type="button"
-                      onClick={() =>
-                        handleOpenConversation(
-                          conversation.conversationId
-                        )
-                      }
-                      className="min-w-0 flex-1 text-left"
-                    >
-                      <p className="text-xs font-semibold uppercase tracking-wide text-teal-700">
-                        {activeTab ===
-                        "inbox"
-                          ? `From: ${getAccountLabel(
-                              message.senderId
-                            )}`
-                          : `To: ${getAccountLabel(
-                              message.receiverId
-                            )}`}
-                      </p>
+                    type="button"
+                    onClick={() =>
+                      handleOpenConversation(
+                        conversation.conversationId
+                      )
+                    }
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p
+                            className={`truncate text-base text-slate-900 ${
+                              conversation.hasUnread &&
+                              activeTab === "inbox"
+                                ? "font-bold"
+                                : "font-semibold"
+                            }`}
+                          >
+                            {partner
+                              ? partner.name
+                              : "Unknown account"}
+                          </p>
 
-                      <div className="mt-2 flex items-center gap-2">
-                        <p
-                          className={`truncate text-slate-900 ${
-                            conversation.hasUnread &&
-                            activeTab ===
-                              "inbox"
-                              ? "font-bold"
-                              : "font-semibold"
-                          }`}
-                        >
-                          {
-                            message.subject
-                          }
+                          {partner && (
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                              {partner.role}
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="mt-1 truncate text-sm font-medium text-slate-700">
+                          {message.subject}
                         </p>
 
-                        {conversation.messages
-                          .length >
-                          1 && (
-                          <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">
-                            {
-                              conversation
-                                .messages
-                                .length
-                            }
-                          </span>
-                        )}
+                        <p className="mt-1 line-clamp-1 text-sm text-slate-500">
+                          {message.senderId === currentUserId
+                            ? `You: ${message.content}`
+                            : message.content}
+                        </p>
                       </div>
 
-                      <p className="mt-1 line-clamp-2 text-sm text-slate-500">
-                        {
-                          message.content
-                        }
-                      </p>
+                      <div className="flex shrink-0 flex-col items-end gap-2">
+                        <span className="text-xs text-slate-400">
+                          {new Date(
+                            message.createdAt
+                          ).toLocaleTimeString(
+                            [],
+                            {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            }
+                          )}
+                        </span>
 
-                      <p className="mt-2 text-xs text-slate-400">
-                        {new Date(
-                          message.createdAt
-                        ).toLocaleString()}
-                      </p>
-                    </button>
+                        {unreadMessages > 0 &&
+                          activeTab === "inbox" && (
+                            <span className="flex min-h-5 min-w-5 items-center justify-center rounded-full bg-teal-700 px-1.5 text-[10px] font-bold text-white">
+                              {unreadMessages > 99
+                                ? "99+"
+                                : unreadMessages}
+                            </span>
+                          )}
+                      </div>
+                    </div>
+                  </button>
 
                     <button
                       type="button"
@@ -900,6 +962,8 @@ const [
                     );
                   }
                 )}
+
+                <div ref={messagesEndRef} />
               </div>
 
               {/* INLINE CHAT INPUT */}
