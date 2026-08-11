@@ -38,8 +38,10 @@ function MessagesPage() {
     closeCompose,
 
     sendMessage,
+    sendConversationReply,
+
     markAsRead,
-    deleteMessage,
+    deleteConversation,
   } = useMessagesContext();
 
   const [activeTab, setActiveTab] =
@@ -48,14 +50,45 @@ function MessagesPage() {
     );
 
   const [
-    replyConversationId,
-    setReplyConversationId,
-  ] = useState<string | null>(null);
+  selectedConversationId,
+  setSelectedConversationId,
+] = useState<string | null>(null);
+
+const [
+  conversationToDelete,
+  setConversationToDelete,
+] = useState<string | null>(null);
+
+  function handleDeleteConversation() {
+  if (!conversationToDelete) {
+    return;
+  }
+
+  deleteConversation(
+    conversationToDelete
+  );
+
+  if (
+    selectedConversationId ===
+    conversationToDelete
+  ) {
+    setSelectedConversationId(null);
+    setConversationReply("");
+  }
+
+  setConversationToDelete(null);
+
+  showToast({
+    type: "success",
+    message:
+      "Conversation deleted successfully.",
+  });
+}
 
   const [
-    selectedConversationId,
-    setSelectedConversationId,
-  ] = useState<string | null>(null);
+    conversationReply,
+    setConversationReply,
+  ] = useState("");
 
   const currentUserId =
     user?.id ?? 0;
@@ -84,10 +117,6 @@ function MessagesPage() {
           currentUserId
     );
 
-  /*
-   * Messages visible in the currently
-   * selected Inbox/Sent tab.
-   */
   const visibleMessages =
     useMemo(() => {
       const normalizedSearch =
@@ -130,10 +159,6 @@ function MessagesPage() {
       searchTerm,
     ]);
 
-  /*
-   * Group the Inbox/Sent list into
-   * one row per conversation.
-   */
   const conversations =
     useMemo(() => {
       const grouped =
@@ -228,17 +253,6 @@ function MessagesPage() {
       currentUserId,
     ]);
 
-  /*
-   * Important:
-   *
-   * The conversation modal uses ALL
-   * messages, not only the current
-   * Inbox/Sent tab.
-   *
-   * This allows sent replies and
-   * received replies to appear in
-   * the same conversation.
-   */
   const selectedConversationMessages =
     useMemo(() => {
       if (
@@ -270,12 +284,6 @@ function MessagesPage() {
       selectedConversationId,
     ]);
 
-  const latestConversationMessage =
-    selectedConversationMessages[
-      selectedConversationMessages.length -
-        1
-    ];
-
   const inboxUnreadCount =
     messages.filter(
       (message) =>
@@ -285,17 +293,44 @@ function MessagesPage() {
           "Sent"
     ).length;
 
+  function getConversationPartnerId() {
+    if (
+      selectedConversationMessages.length ===
+      0
+    ) {
+      return null;
+    }
+
+    const participantMessage =
+      selectedConversationMessages.find(
+        (message) =>
+          message.senderId !==
+            currentUserId ||
+          message.receiverId !==
+            currentUserId
+      );
+
+    if (!participantMessage) {
+      return null;
+    }
+
+    if (
+      participantMessage.senderId ===
+      currentUserId
+    ) {
+      return participantMessage.receiverId;
+    }
+
+    return participantMessage.senderId;
+  }
+
   function handleSendMessage() {
     if (!user) {
       return;
     }
 
     const result =
-      sendMessage(
-        user.id,
-        replyConversationId ??
-          undefined
-      );
+      sendMessage(user.id);
 
     if (!result.success) {
       showToast({
@@ -312,20 +347,66 @@ function MessagesPage() {
       message:
         "Message sent successfully.",
     });
+  }
 
-    setReplyConversationId(
-      null
-    );
+  function handleConversationReply() {
+    if (
+      !user ||
+      !selectedConversationId ||
+      selectedConversationMessages.length ===
+        0
+    ) {
+      return;
+    }
+
+    const receiverId =
+      getConversationPartnerId();
+
+    if (!receiverId) {
+      showToast({
+        type: "error",
+        message:
+          "Unable to determine the message recipient.",
+      });
+
+      return;
+    }
+
+    const firstMessage =
+      selectedConversationMessages[0];
+
+    const result =
+      sendConversationReply({
+        senderId: user.id,
+
+        receiverId,
+
+        conversationId:
+          selectedConversationId,
+
+        subject:
+          firstMessage.subject,
+
+        content:
+          conversationReply,
+      });
+
+    if (!result.success) {
+      showToast({
+        type: "error",
+        message:
+          result.message,
+      });
+
+      return;
+    }
+
+    setConversationReply("");
   }
 
   function handleOpenConversation(
     conversationId: string
   ) {
-    /*
-     * Mark every unread message
-     * addressed to the current user
-     * in this conversation as read.
-     */
     messages
       .filter(
         (message) =>
@@ -343,69 +424,20 @@ function MessagesPage() {
     setSelectedConversationId(
       conversationId
     );
+
+    setConversationReply("");
   }
 
-  function handleReplyToConversation() {
-    if (
-      !selectedConversationId ||
-      selectedConversationMessages
-        .length === 0
-    ) {
-      return;
-    }
-
-    /*
-     * Find the other person in
-     * the conversation.
-     */
-    const otherMessage =
-      [...selectedConversationMessages]
-        .reverse()
-        .find(
-          (message) =>
-            message.senderId !==
-            currentUserId
-        );
-
-    if (!otherMessage) {
-      return;
-    }
-
-    const firstMessage =
-      selectedConversationMessages[0];
-
-    const originalSubject =
-      firstMessage.subject.startsWith(
-        "Re:"
-      )
-        ? firstMessage.subject
-        : `Re: ${firstMessage.subject}`;
-
-    setFormData({
-      receiverId:
-        otherMessage.senderId,
-      subject:
-        originalSubject,
-      content: "",
-    });
-
-    setReplyConversationId(
-      selectedConversationId
-    );
-
+  function handleCloseConversation() {
     setSelectedConversationId(
       null
     );
 
-    openCompose();
+    setConversationReply("");
   }
 
   function handleCloseCompose() {
     closeCompose();
-
-    setReplyConversationId(
-      null
-    );
   }
 
   return (
@@ -426,13 +458,7 @@ function MessagesPage() {
 
         <button
           type="button"
-          onClick={() => {
-            setReplyConversationId(
-              null
-            );
-
-            openCompose();
-          }}
+          onClick={openCompose}
           className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 py-3 font-semibold text-white transition hover:bg-teal-800"
         >
           <Plus size={20} />
@@ -441,11 +467,9 @@ function MessagesPage() {
         </button>
       </section>
 
-      {/* MESSAGES */}
+      {/* MESSAGE LIST */}
 
       <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        {/* TOOLBAR */}
-
         <div className="flex flex-col gap-4 border-b border-slate-200 p-5 md:flex-row md:items-center md:justify-between">
           <div className="flex gap-2">
             <button
@@ -517,8 +541,6 @@ function MessagesPage() {
           </div>
         </div>
 
-        {/* EMPTY STATE */}
-
         {conversations.length ===
         0 ? (
           <div className="p-12 text-center">
@@ -532,8 +554,6 @@ function MessagesPage() {
             </h3>
           </div>
         ) : (
-          /* CONVERSATION LIST */
-
           <div className="divide-y divide-slate-100">
             {conversations.map(
               (
@@ -619,16 +639,14 @@ function MessagesPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        deleteMessage(
-                          message.id
+                        setConversationToDelete(
+                          conversation.conversationId
                         )
                       }
                       className="rounded-lg p-2 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                      title="Delete latest message"
+                      title="Delete conversation"
                     >
-                      <Trash2
-                        size={18}
-                      />
+                      <Trash2 size={18} />
                     </button>
                   </div>
                 );
@@ -645,15 +663,11 @@ function MessagesPage() {
           <div className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl">
             <div className="border-b border-slate-200 p-6">
               <h2 className="text-xl font-bold text-slate-900">
-                {replyConversationId
-                  ? "Reply to Message"
-                  : "Compose Message"}
+                Compose Message
               </h2>
             </div>
 
             <div className="space-y-5 p-6">
-              {/* RECIPIENT */}
-
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Recipient
@@ -664,24 +678,18 @@ function MessagesPage() {
                     formData.receiverId ||
                     ""
                   }
-                  onChange={(
-                    event
-                  ) =>
-                    setFormData(
-                      {
-                        ...formData,
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
 
-                        receiverId:
-                          event.target
-                            .value
-                            ? Number(
-                                event
-                                  .target
-                                  .value
-                              )
-                            : 0,
-                      }
-                    )
+                      receiverId:
+                        event.target.value
+                          ? Number(
+                              event.target
+                                .value
+                            )
+                          : 0,
+                    })
                   }
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
                 >
@@ -722,8 +730,6 @@ function MessagesPage() {
                 )}
               </div>
 
-              {/* SUBJECT */}
-
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   Subject
@@ -733,24 +739,18 @@ function MessagesPage() {
                   value={
                     formData.subject
                   }
-                  onChange={(
-                    event
-                  ) =>
-                    setFormData(
-                      {
-                        ...formData,
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
 
-                        subject:
-                          event.target
-                            .value,
-                      }
-                    )
+                      subject:
+                        event.target
+                          .value,
+                    })
                   }
                   className="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
                 />
               </div>
-
-              {/* MESSAGE */}
 
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -762,18 +762,14 @@ function MessagesPage() {
                   value={
                     formData.content
                   }
-                  onChange={(
-                    event
-                  ) =>
-                    setFormData(
-                      {
-                        ...formData,
+                  onChange={(event) =>
+                    setFormData({
+                      ...formData,
 
-                        content:
-                          event.target
-                            .value,
-                      }
-                    )
+                      content:
+                        event.target
+                          .value,
+                    })
                   }
                   className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
                 />
@@ -800,9 +796,7 @@ function MessagesPage() {
               >
                 <Send size={18} />
 
-                {replyConversationId
-                  ? "Send Reply"
-                  : "Send Message"}
+                Send Message
               </button>
             </div>
           </div>
@@ -816,9 +810,7 @@ function MessagesPage() {
           0 && (
           <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/50 p-4">
             <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
-              {/* HEADER */}
-
-              <div className="flex items-start justify-between border-b border-slate-200 p-6">
+              <div className="flex items-start justify-between border-b border-slate-200 bg-white p-6">
                 <div>
                   <h2 className="text-xl font-bold text-slate-900">
                     {
@@ -829,7 +821,7 @@ function MessagesPage() {
                   </h2>
 
                   <p className="mt-1 text-sm text-slate-500">
-                    Conversation history
+                    Conversation
                   </p>
 
                   <p className="mt-1 text-xs text-slate-400">
@@ -845,10 +837,8 @@ function MessagesPage() {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setSelectedConversationId(
-                      null
-                    )
+                  onClick={
+                    handleCloseConversation
                   }
                   className="rounded-xl p-2 text-slate-500 transition hover:bg-slate-100"
                   aria-label="Close conversation"
@@ -912,40 +902,99 @@ function MessagesPage() {
                 )}
               </div>
 
-              {/* ACTIONS */}
+              {/* INLINE CHAT INPUT */}
 
-              <div className="flex justify-end gap-3 border-t border-slate-200 bg-white p-6">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setSelectedConversationId(
-                      null
-                    )
-                  }
-                  className="rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
-                >
-                  Close
-                </button>
+              <div className="border-t border-slate-200 bg-white p-4">
+                <div className="flex items-end gap-3">
+                  <textarea
+                    rows={2}
+                    value={
+                      conversationReply
+                    }
+                    onChange={(event) =>
+                      setConversationReply(
+                        event.target
+                          .value
+                      )
+                    }
+                    onKeyDown={(event) => {
+                      if (
+                        event.key ===
+                          "Enter" &&
+                        !event.shiftKey
+                      ) {
+                        event.preventDefault();
 
-                {latestConversationMessage && (
+                        handleConversationReply();
+                      }
+                    }}
+                    placeholder="Type a message..."
+                    className="max-h-32 min-h-[52px] flex-1 resize-none rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none transition focus:border-teal-600 focus:ring-4 focus:ring-teal-100"
+                  />
+
                   <button
                     type="button"
                     onClick={
-                      handleReplyToConversation
+                      handleConversationReply
                     }
-                    className="inline-flex items-center gap-2 rounded-xl bg-teal-700 px-5 py-3 font-semibold text-white transition hover:bg-teal-800"
+                    disabled={
+                      !conversationReply.trim()
+                    }
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-teal-700 text-white transition hover:bg-teal-800 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Send message"
                   >
-                    <Send
-                      size={18}
-                    />
-
-                    Reply
+                    <Send size={19} />
                   </button>
-                )}
+                </div>
+
+                <p className="mt-2 text-xs text-slate-400">
+                  Press Enter to send •
+                  Shift + Enter for a new
+                  line
+                </p>
               </div>
             </div>
           </div>
         )}
+
+        {conversationToDelete && (
+  <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/50 p-4">
+    <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600">
+        <Trash2 size={22} />
+      </div>
+
+      <h2 className="mt-5 text-xl font-bold text-slate-900">
+        Delete conversation?
+      </h2>
+
+      <p className="mt-2 text-sm leading-6 text-slate-500">
+        This will remove the entire conversation
+        and all messages inside it.
+      </p>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={() =>
+            setConversationToDelete(null)
+          }
+          className="rounded-xl border border-slate-200 px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDeleteConversation}
+          className="rounded-xl bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-700"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

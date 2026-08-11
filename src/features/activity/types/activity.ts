@@ -7,7 +7,8 @@ export type ActivityCategory =
   | "Account"
   | "Result"
   | "Announcement"
-  | "Event";
+  | "Event"
+  | "Message";
 
 export type Activity = {
   id: number;

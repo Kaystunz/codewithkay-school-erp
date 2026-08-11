@@ -49,8 +49,23 @@ function Topbar({
   const { user, logout } =
     useAuthContext();
 
-  const { unreadCount } =
-    useNotificationsContext();
+  const { notifications } =
+  useNotificationsContext();
+
+  const userNotifications =
+  notifications.filter(
+    (notification) =>
+      notification.recipientId ===
+        undefined ||
+      notification.recipientId ===
+        user?.id
+  );
+
+const unreadCount =
+  userNotifications.filter(
+    (notification) =>
+      !notification.isRead
+  ).length;
 
   useEffect(() => {
     function handleOutsideClick(

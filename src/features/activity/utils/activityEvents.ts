@@ -359,4 +359,36 @@ announcementDeleted(
   };
 },
 
+eventAdded(
+  event: EventActivityData
+): ActivityLogData {
+  return {
+    title: "Event Created",
+    description: `"${event.title}" was scheduled for ${event.startDate}.`,
+    category: "Event",
+    actor: "System",
+  };
+},
+
+eventUpdated(
+  event: EventActivityData
+): ActivityLogData {
+  return {
+    title: "Event Updated",
+    description: `"${event.title}" was updated.`,
+    category: "Event",
+    actor: "System",
+  };
+},
+
+eventDeleted(
+  event: EventActivityData
+): ActivityLogData {
+  return {
+    title: "Event Deleted",
+    description: `"${event.title}" was deleted from the school calendar.`,
+    category: "Event",
+    actor: "System",
+  };
+},
 };

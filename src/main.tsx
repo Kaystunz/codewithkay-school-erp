@@ -15,14 +15,14 @@ ReactDOM.createRoot(
 ).render(
   <React.StrictMode>
     <ToastProvider>
-       <NotificationsProvider>
-      <ActivityProvider>
-        <AccountsProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </AccountsProvider>
-      </ActivityProvider>
+      <NotificationsProvider>
+        <ActivityProvider>
+          <AccountsProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </AccountsProvider>
+        </ActivityProvider>
       </NotificationsProvider>
     </ToastProvider>
   </React.StrictMode>

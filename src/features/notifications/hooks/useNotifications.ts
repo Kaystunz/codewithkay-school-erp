@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 import type {
   CreateNotificationData,
   Notification,
 } from "../types/notification";
 
-const STORAGE_KEY = "fareedah-notifications";
+const STORAGE_KEY =
+  "fareedah-notifications";
 
 function loadNotifications(): Notification[] {
   const storedNotifications =
@@ -20,14 +25,21 @@ function loadNotifications(): Notification[] {
       storedNotifications
     ) as Notification[];
   } catch {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(
+      STORAGE_KEY
+    );
+
     return [];
   }
 }
 
 export function useNotifications() {
-  const [notifications, setNotifications] =
-    useState<Notification[]>(loadNotifications);
+  const [
+    notifications,
+    setNotifications,
+  ] = useState<Notification[]>(
+    loadNotifications
+  );
 
   useEffect(() => {
     localStorage.setItem(
@@ -39,7 +51,8 @@ export function useNotifications() {
   const unreadCount = useMemo(
     () =>
       notifications.filter(
-        (notification) => !notification.isRead
+        (notification) =>
+          !notification.isRead
       ).length,
     [notifications]
   );
@@ -49,64 +62,103 @@ export function useNotifications() {
   ) {
     const newNotification: Notification = {
       id: Date.now(),
+
+      recipientId:
+        data.recipientId,
+
       title: data.title,
       message: data.message,
       category: data.category,
       link: data.link,
-      createdAt: new Date().toISOString(),
+
+      createdAt:
+        new Date().toISOString(),
+
       isRead: false,
     };
 
-    setNotifications((currentNotifications) => [
-      newNotification,
-      ...currentNotifications,
-    ]);
-  }
-
-  function markAsRead(notificationId: number) {
-    setNotifications((currentNotifications) =>
-      currentNotifications.map((notification) =>
-        notification.id === notificationId
-          ? {
-              ...notification,
-              isRead: true,
-            }
-          : notification
-      )
+    setNotifications(
+      (currentNotifications) => [
+        newNotification,
+        ...currentNotifications,
+      ]
     );
   }
 
-  function markAllAsRead() {
-    setNotifications((currentNotifications) =>
-      currentNotifications.map((notification) => ({
-        ...notification,
-        isRead: true,
-      }))
+  function markAsRead(
+    notificationId: number
+  ) {
+    setNotifications(
+      (currentNotifications) =>
+        currentNotifications.map(
+          (notification) =>
+            notification.id ===
+            notificationId
+              ? {
+                  ...notification,
+                  isRead: true,
+                }
+              : notification
+        )
+    );
+  }
+
+  function markAllAsReadForUser(
+    userId: number
+  ) {
+    setNotifications(
+      (currentNotifications) =>
+        currentNotifications.map(
+          (notification) =>
+            notification.recipientId ===
+              undefined ||
+            notification.recipientId ===
+              userId
+              ? {
+                  ...notification,
+                  isRead: true,
+                }
+              : notification
+        )
     );
   }
 
   function deleteNotification(
     notificationId: number
   ) {
-    setNotifications((currentNotifications) =>
-      currentNotifications.filter(
-        (notification) =>
-          notification.id !== notificationId
-      )
+    setNotifications(
+      (currentNotifications) =>
+        currentNotifications.filter(
+          (notification) =>
+            notification.id !==
+            notificationId
+        )
     );
   }
 
-  function clearNotifications() {
-    setNotifications([]);
+  function clearNotificationsForUser(
+    userId: number
+  ) {
+    setNotifications(
+      (currentNotifications) =>
+        currentNotifications.filter(
+          (notification) =>
+            notification.recipientId !==
+              undefined &&
+            notification.recipientId !==
+              userId
+        )
+    );
   }
 
   return {
     notifications,
     unreadCount,
+
     addNotification,
     markAsRead,
-    markAllAsRead,
+    markAllAsReadForUser,
     deleteNotification,
-    clearNotifications,
+    clearNotificationsForUser,
   };
 }

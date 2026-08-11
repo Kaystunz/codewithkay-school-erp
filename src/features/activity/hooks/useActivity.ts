@@ -59,6 +59,9 @@ function getNotificationLink(
     case "Event":
      return "/events";
 
+     case "Message":
+      return "/messages";
+
     default:
       return "/dashboard";
   }
@@ -110,6 +113,9 @@ function shouldCreateNotification(
         activity.title === "Event Completed" ||
         activity.title === "Event Cancelled"
       );
+
+      case "Message":
+        return activity.title === "New Message";
 
     default:
       return false;

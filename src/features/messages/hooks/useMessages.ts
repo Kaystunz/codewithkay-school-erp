@@ -11,6 +11,10 @@ import type {
   MessageFormData,
 } from "../types/message";
 
+import { useActivityContext } from "../../activity/hooks/useActivityContext";
+import { createActivityLog } from "../../activity/utils/activityLogger";
+import { useNotificationsContext } from "../../notifications/hooks/useNotificationsContext";
+
 const STORAGE_KEY =
   "fareedah-messages";
 
@@ -62,6 +66,12 @@ function loadMessages(): Message[] {
 export function useMessages() {
   const [messages, setMessages] =
     useState<Message[]>(loadMessages);
+
+    const { addNotification } =
+         useNotificationsContext();
+
+    const { addActivity } =
+    useActivityContext();
 
   const [formData, setFormData] =
     useState<MessageFormData>(
@@ -118,7 +128,6 @@ export function useMessages() {
 ): SubmitResult {
     const subject =
       formData.subject.trim();
-
     const content =
       formData.content.trim();
 
@@ -174,12 +183,99 @@ export function useMessages() {
       ]
     );
 
+    addNotification({
+        recipientId: newMessage.receiverId,
+
+        title: "New Message",
+
+        message: `You received a new message: "${newMessage.subject}".`,
+
+        category: "Message",
+
+        link: "/messages",
+        });
+
+    addActivity(
+    createActivityLog({
+        title: "New Message",
+        description: `A new message titled "${newMessage.subject}" was sent.`,
+        category: "Message",
+        actor: "System",
+    })
+    );
+
     closeCompose();
 
     return {
       success: true,
     };
   }
+
+  function sendConversationReply({
+  senderId,
+  receiverId,
+  conversationId,
+  subject,
+  content,
+}: {
+  senderId: number;
+  receiverId: number;
+  conversationId: string;
+  subject: string;
+  content: string;
+}): SubmitResult {
+  const cleanedContent =
+    content.trim();
+
+  if (!cleanedContent) {
+    return {
+      success: false,
+      message:
+        "Message cannot be empty.",
+    };
+  }
+
+  const newMessage: Message = {
+    id: Date.now(),
+
+    conversationId,
+
+    senderId,
+    receiverId,
+
+    subject,
+    content: cleanedContent,
+
+    status: "Sent",
+
+    createdAt:
+      new Date().toISOString(),
+  };
+
+  setMessages(
+    (currentMessages) => [
+      newMessage,
+      ...currentMessages,
+    ]
+  );
+
+  addNotification({
+    recipientId:
+      receiverId,
+
+    title: "New Message",
+
+    message: `You received a new message: "${subject}".`,
+
+    category: "Message",
+
+    link: "/messages",
+  });
+
+  return {
+    success: true,
+  };
+}
 
   function markAsRead(
     messageId: number
@@ -210,23 +306,43 @@ export function useMessages() {
     );
   }
 
-  return {
-    messages,
-    filteredMessages,
-    unreadMessages,
+  function deleteConversation(
+  conversationId: string
+) {
+  setMessages((currentMessages) =>
+    currentMessages.filter(
+      (message) =>
+        message.conversationId !==
+        conversationId
+    )
+  );
+}
 
-    searchTerm,
-    setSearchTerm,
+ return {
+  messages,
+  filteredMessages,
+  unreadMessages,
 
-    formData,
-    setFormData,
+  sendMessage,
+  sendConversationReply,
+  markAsRead,
+  deleteMessage,
+  deleteConversation,
 
-    isComposeOpen,
-    openCompose,
-    closeCompose,
+  searchTerm,
+  setSearchTerm,
 
-    sendMessage,
-    markAsRead,
-    deleteMessage,
-  };
+  formData,
+  setFormData,
+
+  isComposeOpen,
+  openCompose,
+  closeCompose,
+
+  sendMessage,
+  sendConversationReply,
+
+  markAsRead,
+  deleteMessage,
+};
 }
